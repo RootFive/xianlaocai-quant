@@ -1,0 +1,23 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.xianlaocai.quant</groupId>
+    <artifactId>xianlaocai-quant</artifactId>
+    <version>XLCQ20230901</version>
+  </parent>
+  <artifactId>quant-data-indicator</artifactId>
+  <name>quant-data-indicator</name>
+  <description>quant-data-indicator</description>
+  
+  
+  
+  	<dependencies>
+		<!-- lombok支持 -->
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+		    <version>1.18.24</version>
+		</dependency>
+	</dependencies>	
+    
+</project>
