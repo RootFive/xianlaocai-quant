@@ -1,7 +1,7 @@
 /**
  * 
  */
-package xlc.quant.data.indicator;
+package xlc.quant.data.indicator.test;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

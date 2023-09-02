@@ -1,4 +1,4 @@
-package xlc.quant.data.indicator;
+package xlc.quant.data.indicator.test;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import xlc.quant.data.indicator.Indicator;
+import xlc.quant.data.indicator.IndicatorCarrier;
 import xlc.quant.data.indicator.Indicator.IndicatorCalculator;
 import xlc.quant.data.indicator.calculator.BIAS;
 import xlc.quant.data.indicator.calculator.BOLL;
@@ -20,7 +22,7 @@ import xlc.quant.data.indicator.calculator.TD;
 import xlc.quant.data.indicator.calculator.WR;
 import xlc.quant.data.indicator.calculator.innovate.TOPMV;
 
-public class indicatorTest {
+public class DemoTest {
     public static void main(String[] args) {
     	List<StockDaily> listStockDaily = new ArrayList<>();
     	
