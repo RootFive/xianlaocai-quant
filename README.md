@@ -243,8 +243,20 @@ public class MA extends Indicator {
 1.  Ecplse或者IDEA
 
 ## 使用说明
+1. Maven项目的 pom.xml直接引用
 
-1.  请看项目中的测试例子：/quant-data-indicator/src/test/java/xlc/quant/data/indicator/test/DemoTest.java
+```xml
+	<dependency>
+		<groupId>com.xianlaocai.quant</groupId>
+		<artifactId>quant-data-indicator</artifactId>
+		<version>${xianlaocai-quant.version}</version>
+	</dependency>
+```
+
+
+2.  请看项目中的测试例子：/quant-data-indicator/src/test/java/xlc/quant/data/indicator/test/DemoTest.java
+
+
 
 ## 参与贡献
 
