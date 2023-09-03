@@ -28,6 +28,32 @@
 		
 	</properties>
 
+    <!--开源协议-->
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+            <comments>A business-friendly OSS license</comments>
+        </license>
+    </licenses>
+    
+    <!--项目地址-->
+    <url>https://github.com/RootFive/xianlaocai-quant</url>
+
+    <!--开发者信息-->
+    <developers>
+        <developer>
+            <id>Rootfive</id>
+            <name>Rootfive</name>
+            <email>2236067977@qq.com</email>
+            <roles>
+                <role>Developer</role>
+            </roles>
+            <timezone>+8</timezone>
+        </developer>
+    </developers>
+    
 	<scm>
 		<url>https://gitee.com/jeemodel/jeemodel.git</url>
 		<connection>scm:git:https://gitee.com/jeemodel/jeemodel.git</connection>
@@ -101,4 +127,16 @@
 			</plugin>
 		</plugins>
 	</build>
+	
+	
+	<distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
 </project>
