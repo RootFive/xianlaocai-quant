@@ -249,7 +249,7 @@ public class MA extends Indicator {
 	<dependency>
 		<groupId>com.xianlaocai.quant</groupId>
 		<artifactId>quant-data-indicator</artifactId>
-		<version>${xianlaocai-quant.version}</version>
+		<version>XLCQ20230902</version>
 	</dependency>
 ```
 
