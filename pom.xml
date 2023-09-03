@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.xianlaocai.quant</groupId>
 	<artifactId>xianlaocai-quant</artifactId>
-	<version>XLCQ20230901</version>
+	<version>XLCQ20230902</version>
 	<packaging>pom</packaging>
 	<name>xianlaocai-quant</name>
 	<description>
@@ -22,7 +22,7 @@
 			<roles>
 				<role>Java Development Engineer</role>
 			</roles>
-			<timezone>2023-9-03 16:58:07</timezone>
+			<timezone>+8</timezone>
 		</developer>
 	</developers>
 
@@ -32,9 +32,9 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<java.version>1.8</java.version>
 		<maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
+		<maven.compiler.target>1.8</maven.compiler.target>
 
-		<xianlaocai-quant.version>XLCQ20230901</xianlaocai-quant.version>
+		<xianlaocai-quant.version>XLCQ20230902</xianlaocai-quant.version>
 
 		<!-- maven构建依赖 -->
 		<!--<maven-jar-plugin.version>3.3.0</maven-jar-plugin.version>
@@ -46,6 +46,10 @@
 
 		<!-- 打包跳过单元测试1 -->
 		<skipTests>true</skipTests>
+		<nexus-staging-maven-plugin.version>1.6.13</nexus-staging-maven-plugin.version>
+		<server.id.value>oss</server.id.value>
+		
+		
 	</properties>
 
 	<!--开源协议-->
@@ -100,10 +104,22 @@
 
 	<build>
 		<plugins>
+            <!--用于与 Sonatype Nexus 仓库进行集成，方便在 Maven 构建过程中进行部署和发布操作-->
+            <plugin>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>nexus-staging-maven-plugin</artifactId>
+                <version>${nexus-staging-maven-plugin.version}</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <serverId>${server.id.value}</serverId>
+                    <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
+                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                </configuration>
+            </plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>
-				<version>2.2.1</version>
+				<version>3.3.0</version>
 				<executions>
 					<execution>
 						<id>attach-sources</id>
@@ -116,7 +132,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>2.9.1</version>
+				 <version>3.5.0</version>
 				<configuration>
 					<additionalJOptions>
 						<additionalJOption>-Xdoclint:none</additionalJOption>

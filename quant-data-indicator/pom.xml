@@ -3,7 +3,7 @@
   <parent>
     <groupId>com.xianlaocai.quant</groupId>
     <artifactId>xianlaocai-quant</artifactId>
-    <version>XLCQ20230901</version>
+    <version>XLCQ20230902</version>
   </parent>
   <artifactId>quant-data-indicator</artifactId>
   <name>quant-data-indicator</name>
@@ -17,6 +17,7 @@
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 		</dependency>
+		
 	</dependencies>	
     
 </project>
