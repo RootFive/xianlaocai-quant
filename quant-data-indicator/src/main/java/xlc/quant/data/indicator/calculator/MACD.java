@@ -54,8 +54,9 @@ public class MACD extends Indicator {
 	//=============
 	/**
 	 * 构建-计算器
-	 * 
-	 * @param capacity
+	 * @param fastCycle
+	 * @param slowCycle
+	 * @param difCycle
 	 * @return
 	 */
 	public static IndicatorCalculator<MACD> buildCalculator(int fastCycle, int slowCycle, int difCycle) {
