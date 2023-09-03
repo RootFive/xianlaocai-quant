@@ -55,8 +55,8 @@
     </developers>
     
 	<scm>
-		<url>https://gitee.com/jeemodel/jeemodel.git</url>
-		<connection>scm:git:https://gitee.com/jeemodel/jeemodel.git</connection>
+		<url>https://gitee.com/xianlaocai/xianlaocai-quant</url>
+		<connection>scm:https://gitee.com/xianlaocai/xianlaocai-quant.git</connection>
 	</scm>
 	
 	<build>

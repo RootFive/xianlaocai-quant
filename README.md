@@ -1,7 +1,10 @@
 # xianlaocai-quant
 
 ## 介绍
-xianlaocai-quant是一个父工程，目前仅仅公开一个包：quant-data-indicator，主要是用来计算技术指标的，后续会持续更新。欢迎大家多提bug和建议，参与贡献.
+xianlaocai-quant是一个父工程，目前仅仅开源一个包，会逐步开源子模块。
+
+### quant-data-indicator
+主要是用来计算技术指标的，后续会持续更新。欢迎大家多提bug和建议，参与贡献.
 
 ### quant-data-indicator
 基于Java实现常见指标MACD,RSI,BOLL,KDJ,CCI,MA,EMA,BIAS,TD,WR等,全部封装，简洁且准确，能非常方便的应用在各自股票股市技术分析，股票自动程序化交易,数字货币BTC等量化等领域.
