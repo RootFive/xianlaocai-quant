@@ -8,7 +8,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import xlc.quant.data.indicator.Indicator;
-import xlc.quant.data.indicator.IndicatorCarrier;
+import xlc.quant.data.indicator.IndicatorCalculator;
+import xlc.quant.data.indicator.IndicatorCalculatorCarrier;
 
 
 /**
@@ -61,16 +62,16 @@ public class TD extends Indicator {
 
 		@Override
 		protected TD executeCalculate() {
-			List<IndicatorCarrier<TD>> calculatorListData = getCalculatorListData();
+			List<IndicatorCalculatorCarrier<TD>> calculatorListData = getCalculatorListData();
 
 			if (calculatorListData.size() < (1 + moveSize)) {
 				return null;
 			}
 
 			// 第一根
-			IndicatorCarrier<TD> current = getHead();
-			IndicatorCarrier<TD> compareMove = get(1 + moveSize);
-			IndicatorCarrier<TD> prev = prev();
+			IndicatorCalculatorCarrier<TD> current = getHead();
+			IndicatorCalculatorCarrier<TD> compareMove = get(1 + moveSize);
+			IndicatorCalculatorCarrier<TD> prev = getPrev();
 
 			BigDecimal currentClose = current.getClose();
 			BigDecimal compareMoveClose = compareMove.getClose();

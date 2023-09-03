@@ -8,7 +8,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import xlc.quant.data.indicator.Indicator;
-import xlc.quant.data.indicator.IndicatorCarrier;
+import xlc.quant.data.indicator.IndicatorCalculator;
+import xlc.quant.data.indicator.IndicatorCalculatorCarrier;
 
 /**
  * 计算器
@@ -29,6 +30,7 @@ import xlc.quant.data.indicator.IndicatorCarrier;
 @EqualsAndHashCode(callSuper = true)
 public class MA extends Indicator {
 
+	/** MA计算值  */
 	private BigDecimal value;
 
 	
@@ -44,6 +46,10 @@ public class MA extends Indicator {
 		return new MACalculator(capacity);
 	}
 
+	/**
+	 * 内部类实现MA计算器
+	 * @author Rootfive
+	 */
 	private static class MACalculator extends IndicatorCalculator<MA> {
 
 		/**
@@ -57,8 +63,7 @@ public class MA extends Indicator {
 		protected MA executeCalculate() {
 			BigDecimal maValue = null;
 			if (isFullCapacity) {
-				BigDecimal closeSumValue = Arrays.stream(super.circularArrayElementData).map(IndicatorCarrier::getClose)
-						.reduce(BigDecimal::add).get();
+				BigDecimal closeSumValue = Arrays.stream(super.circularElementData).map(IndicatorCalculatorCarrier::getClose).reduce(BigDecimal::add).get();
 				maValue = divide(closeSumValue, periodCapacity, 2);
 				return new MA(maValue);
 			}

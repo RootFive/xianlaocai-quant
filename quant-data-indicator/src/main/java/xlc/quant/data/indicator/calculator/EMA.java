@@ -8,7 +8,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import xlc.quant.data.indicator.Indicator;
-import xlc.quant.data.indicator.IndicatorCarrier;
+import xlc.quant.data.indicator.IndicatorCalculator;
+import xlc.quant.data.indicator.IndicatorCalculatorCarrier;
 
 /**
  * @author Rootfive 百度百科：https://blog.csdn.net/zkxshg/article/details/86546159
@@ -42,7 +43,7 @@ public class EMA extends Indicator {
 	}
 
 	/**
-	 * 
+	 * 计算器
 	 * @author Rootfive
 	 */
 	private static class EMACalculator extends IndicatorCalculator<EMA> {
@@ -60,9 +61,9 @@ public class EMA extends Indicator {
 
 		@Override
 		protected EMA executeCalculate() {
-			IndicatorCarrier<EMA> head = getHead();
+			IndicatorCalculatorCarrier<EMA> head = getHead();
 			// 前一个计算指数
-			IndicatorCarrier<EMA> prev = get(2);
+			IndicatorCalculatorCarrier<EMA> prev = get(2);
 			BigDecimal emaValue = null;
 			if (prev == null) {
 				/*

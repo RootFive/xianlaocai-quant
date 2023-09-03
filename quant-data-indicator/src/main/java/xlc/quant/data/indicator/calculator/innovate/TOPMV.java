@@ -10,7 +10,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import xlc.quant.data.indicator.Indicator;
-import xlc.quant.data.indicator.IndicatorCarrier;
+import xlc.quant.data.indicator.IndicatorCalculator;
+import xlc.quant.data.indicator.IndicatorCalculatorCarrier;
 
 /**
  * @author Rootfive
@@ -75,7 +76,7 @@ public class TOPMV extends Indicator {
 		@Override
 		protected TOPMV executeCalculate() {
 			// 成交额-所有
-			List<BigDecimal> listAmount = Arrays.stream(super.circularArrayElementData).map(IndicatorCarrier::getAmount).collect(Collectors.toList());
+			List<BigDecimal> listAmount = Arrays.stream(super.circularElementData).map(IndicatorCalculatorCarrier::getAmount).collect(Collectors.toList());
 			// 倒叙
 			BigDecimal reverseOrderSumAmount = listAmount.stream().sorted(Comparator.reverseOrder()).limit(top).reduce(BigDecimal::add).get();
 			/** 成交额-最高值-前X个均值 */
@@ -87,7 +88,7 @@ public class TOPMV extends Indicator {
 			BigDecimal atl = divide(naturalOrderSumAmount, topValue, 2);
 
 			// 成交量-所有
-			List<BigDecimal> listVolume = Arrays.stream(super.circularArrayElementData).map(IndicatorCarrier::getVolume).collect(Collectors.toList());
+			List<BigDecimal> listVolume = Arrays.stream(super.circularElementData).map(IndicatorCalculatorCarrier::getVolume).collect(Collectors.toList());
 
 					
 			// 倒叙

@@ -9,7 +9,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import xlc.quant.data.indicator.Indicator;
-import xlc.quant.data.indicator.IndicatorCarrier;
+import xlc.quant.data.indicator.IndicatorCalculator;
+import xlc.quant.data.indicator.IndicatorCalculatorCarrier;
 
 /**
  * 威廉指标（Williams %R或简称W%R）
@@ -69,15 +70,15 @@ public class WR extends Indicator {
 
 		@Override
 		protected WR executeCalculate() {
-			IndicatorCarrier<WR> head = getHead();
+			IndicatorCalculatorCarrier<WR> head = getHead();
 
 			BigDecimal headClose = head.getClose();
 			BigDecimal maxHigh = null;
 			BigDecimal minLow = null;
 
-			maxHigh = Arrays.stream(super.circularArrayElementData).max(Comparator.comparing(IndicatorCarrier::getHigh))
+			maxHigh = Arrays.stream(super.circularElementData).max(Comparator.comparing(IndicatorCalculatorCarrier::getHigh))
 					.get().getHigh();
-			minLow = Arrays.stream(super.circularArrayElementData).min(Comparator.comparing(IndicatorCarrier::getLow))
+			minLow = Arrays.stream(super.circularElementData).min(Comparator.comparing(IndicatorCalculatorCarrier::getLow))
 					.get().getLow();
 			// 计算公式：W%R=（Hn—C）÷（Hn—Ln）×100其中
 			BigDecimal wrValue = divideByPct(maxHigh.subtract(headClose), maxHigh.subtract(minLow));

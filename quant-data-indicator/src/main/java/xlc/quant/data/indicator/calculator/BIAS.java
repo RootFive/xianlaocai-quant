@@ -8,7 +8,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import xlc.quant.data.indicator.Indicator;
-import xlc.quant.data.indicator.IndicatorCarrier;
+import xlc.quant.data.indicator.IndicatorCalculator;
+import xlc.quant.data.indicator.IndicatorCalculatorCarrier;
 
 /**
 * @author Rootfive
@@ -61,14 +62,14 @@ public class BIAS extends Indicator {
 
 		@Override
 		protected BIAS executeCalculate() {
-			IndicatorCarrier<BIAS> head = getHead();
+			IndicatorCalculatorCarrier<BIAS> head = getHead();
 			// 当前使用价格
 			BigDecimal currentUsePrice = null;
 			// 缓冲区内所有 平均值
 			BigDecimal ma = null;
 			if (isFullCapacity) {
 				currentUsePrice = head.getClose();
-				BigDecimal sumValue = Arrays.stream(super.circularArrayElementData).map(IndicatorCarrier::getClose).reduce(BigDecimal::add).get();
+				BigDecimal sumValue = Arrays.stream(super.circularElementData).map(IndicatorCalculatorCarrier::getClose).reduce(BigDecimal::add).get();
 				ma = divide(sumValue, periodCapacity, 2);
 			}
 

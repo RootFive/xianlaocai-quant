@@ -6,7 +6,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import xlc.quant.data.indicator.Indicator;
-import xlc.quant.data.indicator.IndicatorCarrier;
+import xlc.quant.data.indicator.IndicatorCalculator;
+import xlc.quant.data.indicator.IndicatorCalculatorCarrier;
 
 
 /**
@@ -88,13 +89,13 @@ public class RSI extends Indicator {
 			BigDecimal emaUp = null;
 			BigDecimal emaDown = null;
 
-			RSI prevRSI = prev().getIndicator();
+			RSI prevRSI = getPrev().getIndicator();
 			if (prevRSI == null) {
 				// 涨额之和
 				BigDecimal sumUp = BigDecimal.ZERO;
 				// 跌额之和
 				BigDecimal sumDown = BigDecimal.ZERO;
-				for (IndicatorCarrier<RSI> calculate : super.circularArrayElementData) {
+				for (IndicatorCalculatorCarrier<RSI> calculate : super.circularElementData) {
 					BigDecimal changePrice = calculate.getPriceChange();
 					if (changePrice == null) {
 						// 第一根K线可能没有统计到涨跌幅，跳过
@@ -117,7 +118,7 @@ public class RSI extends Indicator {
 				BigDecimal prevEmaUp = prevRSI.getEmaUp();
 				BigDecimal prevEmaDown = prevRSI.getEmaDown();
 
-				IndicatorCarrier<RSI> head = getHead();
+				IndicatorCalculatorCarrier<RSI> head = getHead();
 				BigDecimal changePrice = head.getPriceChange();
 
 				// 涨幅之和累加

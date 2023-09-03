@@ -7,7 +7,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import xlc.quant.data.indicator.Indicator;
-import xlc.quant.data.indicator.IndicatorCarrier;
+import xlc.quant.data.indicator.IndicatorCalculator;
+import xlc.quant.data.indicator.IndicatorCalculatorCarrier;
 
 /**
  * 
@@ -82,18 +83,18 @@ public class MACD extends Indicator {
 
 		@Override
 		protected MACD executeCalculate() {
-			IndicatorCarrier<MACD> current = getHead();
+			IndicatorCalculatorCarrier<MACD> current = getHead();
 
 			// 快线EMA
-			BigDecimal fastEma = fastEMAFactor.execute(new IndicatorCarrier<EMA>(current)).getValue();
+			BigDecimal fastEma = fastEMAFactor.execute(new IndicatorCalculatorCarrier<EMA>(current)).getValue();
 			// 慢线EMA
-			BigDecimal slowEma = slowEMAFactor.execute(new IndicatorCarrier<EMA>(current)).getValue();
+			BigDecimal slowEma = slowEMAFactor.execute(new IndicatorCalculatorCarrier<EMA>(current)).getValue();
 			// 计算离差值(DIF)
 			BigDecimal dif = fastEma.subtract(slowEma);
 
 			// 前一个计算指数
 			MACD prevMacd = null;
-			IndicatorCarrier<MACD> prev = prev();
+			IndicatorCalculatorCarrier<MACD> prev = getPrev();
 			if (prev != null) {
 				prevMacd = prev.getIndicator();
 			}

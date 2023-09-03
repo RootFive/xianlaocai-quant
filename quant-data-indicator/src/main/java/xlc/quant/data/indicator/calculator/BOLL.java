@@ -7,7 +7,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import xlc.quant.data.indicator.Indicator;
-import xlc.quant.data.indicator.IndicatorCarrier;
+import xlc.quant.data.indicator.IndicatorCalculator;
+import xlc.quant.data.indicator.IndicatorCalculatorCarrier;
 
 /**
  * @author Rootfive 布林线指标
@@ -89,11 +90,11 @@ public class BOLL extends Indicator {
 
 		@Override
 		protected BOLL executeCalculate() {
-			IndicatorCarrier<BOLL> head = getHead();
+			IndicatorCalculatorCarrier<BOLL> head = getHead();
 			// 1）计算MA: MA=N日内的收盘价之和÷N
 
 			// 收盘价 平均值
-			MA MA = maCalculator.execute(new IndicatorCarrier<MA>(head));
+			MA MA = maCalculator.execute(new IndicatorCalculatorCarrier<MA>(head));
 			// BOLL线
 			if (!isFullCapacity) {
 				return null;
@@ -103,7 +104,7 @@ public class BOLL extends Indicator {
 			// 2）计算标准差MD MD=平方根（N-1）日的（C－MA）的两次方之和除以N
 			// 2.1 计算方差
 			BigDecimal varianceS2 = BigDecimal.ZERO;
-			for (IndicatorCarrier<BOLL> m : super.circularArrayElementData) {
+			for (IndicatorCalculatorCarrier<BOLL> m : super.circularElementData) {
 				// 差值
 				BigDecimal DValue = m.getClose().subtract(MA.getValue());
 				// 差值的平方只和
@@ -122,8 +123,8 @@ public class BOLL extends Indicator {
 			BigDecimal UP = MB.add(kMD).setScale(2, RoundingMode.HALF_UP);
 			BigDecimal DN = MB.subtract(kMD).setScale(2, RoundingMode.HALF_UP);
 
-			prev().getIndicator();
-			BOLL prevBoll = prev().getIndicator();
+			getPrev().getIndicator();
+			BOLL prevBoll = getPrev().getIndicator();
 			BOLL boll = null;
 			if (prevBoll == null) {
 				boll = new BOLL(UP, MB, DN, 0);

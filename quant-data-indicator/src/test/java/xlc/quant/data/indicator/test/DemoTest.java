@@ -8,8 +8,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import xlc.quant.data.indicator.Indicator;
-import xlc.quant.data.indicator.IndicatorCarrier;
-import xlc.quant.data.indicator.Indicator.IndicatorCalculator;
+import xlc.quant.data.indicator.IndicatorCalculator;
+import xlc.quant.data.indicator.IndicatorCalculatorCarrier;
 import xlc.quant.data.indicator.calculator.BIAS;
 import xlc.quant.data.indicator.calculator.BOLL;
 import xlc.quant.data.indicator.calculator.CCI;
@@ -24,10 +24,11 @@ import xlc.quant.data.indicator.calculator.innovate.TOPMV;
 
 public class DemoTest {
     public static void main(String[] args) {
+    	
     	List<StockDaily> listStockDaily = new ArrayList<>();
     	
+    	//个股日线行情按照日期时间正序排序。
     	List<StockDaily> listStockDailyOrderByTradeDateAsc= listStockDaily .stream().sorted(Comparator.comparing(StockDaily::getTradeDate)).collect(Collectors.toList());
-    	
     	calculateDailyIndicator(listStockDailyOrderByTradeDateAsc);
     }
     
@@ -209,8 +210,8 @@ public class DemoTest {
 	}
 	
 	
-	public  static <T extends Indicator> IndicatorCarrier<T> createIndicatorCarrier(Class<T> clazz, StockDaily daily) {
-		IndicatorCarrier<T> indicatorCarrier = new IndicatorCarrier<>();
+	public  static <T extends Indicator> IndicatorCalculatorCarrier<T> createIndicatorCarrier(Class<T> clazz, StockDaily daily) {
+		IndicatorCalculatorCarrier<T> indicatorCarrier = new IndicatorCalculatorCarrier<>();
 		
 		//赋值属性
 		indicatorCarrier.setSymbol(daily.getStockCode());
