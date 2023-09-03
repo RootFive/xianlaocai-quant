@@ -24,7 +24,6 @@
 		<maven-war-plugin.version>3.4.0</maven-war-plugin.version>
 		<maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
 		<maven-source-plugin.version>3.3.0</maven-source-plugin.version>
-		<buildnumber-maven-plugin.version>3.2.0</buildnumber-maven-plugin.version>
 		
 	</properties>
 
@@ -103,27 +102,6 @@
 						</goals>
 					</execution>
 				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>buildnumber-maven-plugin</artifactId>
-				<version>${buildnumber-maven-plugin.version}</version>
-				<executions>
-					<execution>
-						<phase>validate</phase>
-						<goals>
-							<goal>create</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<format>{0,date,yyyy-MM-dd HH:mm:ss}</format>
-					<items>
-						<item>timestamp</item>
-					</items>
-					<doCheck>false</doCheck>
-					<doUpdate>true</doUpdate>
-				</configuration>
 			</plugin>
 		</plugins>
 	</build>
