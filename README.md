@@ -103,7 +103,7 @@ public abstract  class IndicatorCalculator<T extends Indicator>  extends  FixedW
 }
 ```
 
-3、IndicatorCalculatorCallback：指标计算载体，用来计算指标并返回
+4、IndicatorCalculatorCallback：指标计算载体，用来计算指标并返回
 
 ```java
 /**
@@ -278,11 +278,16 @@ public class MA extends Indicator {
 ```
 
 
-## 安装教程
-1.  Ecplse或者IDEA
-
 ## 使用说明
-1. Maven项目的 pom.xml直接引用
+
+### Maven直接引用
+
+Maven地址2（更新较慢）：https://mvnrepository.com/artifact/com.xianlaocai.quant/quant-data-indicator
+Maven地址2（更新较慢）：https://mvnrepository.com/artifact/com.xianlaocai.quant/quant-data-indicator
+
+1.  IDE: Ecplse或者IDEA均可
+
+2. Maven
 
 ```xml
 	<dependency>
@@ -292,6 +297,13 @@ public class MA extends Indicator {
 	</dependency>
 ```
 
+Gradle
+
+```xml
+// https://mvnrepository.com/artifact/com.xianlaocai.quant/quant-data-indicator
+implementation group: 'com.xianlaocai.quant', name: 'quant-data-indicator', version: 'XLCQ20230907'
+
+```
 
 2.  请看项目中的测试例子：/quant-data-indicator/src/test/java/xlc/quant/data/indicator/test/DemoTest.java
 
@@ -303,9 +315,6 @@ public class MA extends Indicator {
 2.  新建 Feat_xxx 分支
 3.  提交代码
 4.  新建 Pull Request
-
-### 指标实现示例
-如果你想自定义实现一个的的指标，可以按照下上述指标计算实现说明
 
 
 ## 交流群信息
