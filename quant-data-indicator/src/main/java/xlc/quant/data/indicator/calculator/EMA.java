@@ -9,7 +9,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import xlc.quant.data.indicator.Indicator;
 import xlc.quant.data.indicator.IndicatorCalculator;
-import xlc.quant.data.indicator.IndicatorCalculatorCarrier;
+import xlc.quant.data.indicator.IndicatorCalculatorCallback;
 
 /**
  * @author Rootfive 百度百科：https://blog.csdn.net/zkxshg/article/details/86546159
@@ -61,9 +61,9 @@ public class EMA extends Indicator {
 
 		@Override
 		protected EMA executeCalculate() {
-			IndicatorCalculatorCarrier<EMA> head = getHead();
+			IndicatorCalculatorCallback<EMA> head = getHead();
 			// 前一个计算指数
-			IndicatorCalculatorCarrier<EMA> prev = get(2);
+			IndicatorCalculatorCallback<EMA> prev = getPrev();
 			BigDecimal emaValue = null;
 			if (prev == null) {
 				/*

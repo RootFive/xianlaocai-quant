@@ -2,7 +2,6 @@ package xlc.quant.data.indicator.calculator;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.Arrays;
 import java.util.Comparator;
 
 import lombok.Data;
@@ -10,7 +9,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import xlc.quant.data.indicator.Indicator;
 import xlc.quant.data.indicator.IndicatorCalculator;
-import xlc.quant.data.indicator.IndicatorCalculatorCarrier;
+import xlc.quant.data.indicator.IndicatorCalculatorCallback;
 
 
 /**
@@ -93,14 +92,14 @@ public class KDJ extends Indicator {
 		 */
 		@Override
 		protected KDJ executeCalculate() {
-			IndicatorCalculatorCarrier<KDJ> headData = getHead();
+			IndicatorCalculatorCallback<KDJ> headData = getHead();
 
 			// 第收盘价
 			BigDecimal valueCn = headData.getClose();
 			// Hn为n日内的最高价
-			BigDecimal valueHn = Arrays.stream(super.circularElementData).max(Comparator.comparing(IndicatorCalculatorCarrier::getHigh)).get().getHigh();
+			BigDecimal valueHn = super.getCalculatorListData().stream().max(Comparator.comparing(IndicatorCalculatorCallback::getHigh)).get().getHigh();
 			// Ln为n日内的最低价
-			BigDecimal valueLn = Arrays.stream(super.circularElementData).min(Comparator.comparing(IndicatorCalculatorCarrier::getLow)).get().getLow();
+			BigDecimal valueLn = super.getCalculatorListData().stream().min(Comparator.comparing(IndicatorCalculatorCallback::getLow)).get().getLow();
 					
 
 			// 计算公式为：n日RSV=（Cn－Ln）÷（Hn－Ln）×100,四舍五入，保留4位小数
@@ -110,7 +109,7 @@ public class KDJ extends Indicator {
 			 * 计算K值: 当日K值=2/3×前一日K值＋1/3×当日RSV 计算D值： 当日D值=2/3×前一日D值＋1/3×当日K值 计算J值：
 			 * 当日J值=3*当日K值-2*当日D值 【注意】若无前一日K 值与D值，则可分别用50（1-100的中间值）来代替。
 			 */
-			IndicatorCalculatorCarrier<KDJ> prev = getPrev();
+			IndicatorCalculatorCallback<KDJ> prev = getPrev();
 
 			// 前一个交易统计的KDJ
 			KDJ prevKdj = null;

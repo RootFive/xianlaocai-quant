@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
  */
 @Data
 @NoArgsConstructor
-public class FuQuanDomain {
+public class FuQuanDomainDTO {
 	
 
     /** 开盘价(元) */

@@ -8,7 +8,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import xlc.quant.data.indicator.Indicator;
 import xlc.quant.data.indicator.IndicatorCalculator;
-import xlc.quant.data.indicator.IndicatorCalculatorCarrier;
+import xlc.quant.data.indicator.IndicatorCalculatorCallback;
 
 /**
  * @author Rootfive 布林线指标
@@ -90,13 +90,13 @@ public class BOLL extends Indicator {
 
 		@Override
 		protected BOLL executeCalculate() {
-			IndicatorCalculatorCarrier<BOLL> head = getHead();
+			IndicatorCalculatorCallback<BOLL> head = getHead();
 			// 1）计算MA: MA=N日内的收盘价之和÷N
 
 			// 收盘价 平均值
-			MA MA = maCalculator.execute(new IndicatorCalculatorCarrier<MA>(head));
+			MA MA = maCalculator.execute(new IndicatorCalculatorCallback<MA>(head));
 			// BOLL线
-			if (!isFullCapacity) {
+			if (!isFullCapacity()) {
 				return null;
 			}
 			BigDecimal maValue = MA.getValue();
@@ -104,14 +104,14 @@ public class BOLL extends Indicator {
 			// 2）计算标准差MD MD=平方根（N-1）日的（C－MA）的两次方之和除以N
 			// 2.1 计算方差
 			BigDecimal varianceS2 = BigDecimal.ZERO;
-			for (IndicatorCalculatorCarrier<BOLL> m : super.circularElementData) {
+			for (IndicatorCalculatorCallback<BOLL> m : super.getCalculatorListData()) {
 				// 差值
 				BigDecimal DValue = m.getClose().subtract(MA.getValue());
 				// 差值的平方只和
 				varianceS2 = varianceS2.add((DValue).multiply(DValue));
 			}
 			// 方差
-			BigDecimal variance = varianceS2.divide(periodCapacity, 4, RoundingMode.HALF_UP);
+			BigDecimal variance = varianceS2.divide(fwcPeriod, 4, RoundingMode.HALF_UP);
 			// 标准差
 			BigDecimal MD = new BigDecimal(Math.sqrt(variance.doubleValue()));
 

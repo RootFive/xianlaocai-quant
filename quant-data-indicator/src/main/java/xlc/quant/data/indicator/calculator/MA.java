@@ -1,7 +1,6 @@
 package xlc.quant.data.indicator.calculator;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,7 +8,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import xlc.quant.data.indicator.Indicator;
 import xlc.quant.data.indicator.IndicatorCalculator;
-import xlc.quant.data.indicator.IndicatorCalculatorCarrier;
+import xlc.quant.data.indicator.IndicatorCalculatorCallback;
 
 /**
  * 计算器
@@ -62,9 +61,9 @@ public class MA extends Indicator {
 		@Override
 		protected MA executeCalculate() {
 			BigDecimal maValue = null;
-			if (isFullCapacity) {
-				BigDecimal closeSumValue = Arrays.stream(super.circularElementData).map(IndicatorCalculatorCarrier::getClose).reduce(BigDecimal::add).get();
-				maValue = divide(closeSumValue, periodCapacity, 2);
+			if (isFullCapacity()) {
+				BigDecimal closeSumValue = super.getCalculatorListData().stream().map(IndicatorCalculatorCallback::getClose).reduce(BigDecimal::add).get();
+				maValue = divide(closeSumValue, fwcPeriod, 2);
 				return new MA(maValue);
 			}
 			return null;

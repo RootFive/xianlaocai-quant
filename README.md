@@ -7,53 +7,44 @@ xianlaocai-quant是一个父工程，目前仅仅开源一个包，会逐步开�
 主要是用来计算技术指标的，后续会持续更新。欢迎大家多提bug和建议，参与贡献.
 
 ### quant-data-indicator
-基于Java实现常见指标MACD,RSI,BOLL,KDJ,CCI,MA,EMA,BIAS,TD,WR等,全部封装，简洁且准确，能非常方便的应用在各自股票股市技术分析，股票自动程序化交易,数字货币BTC等量化等领域.
+基于Java实现常见指标MACD,RSI,BOLL,KDJ,CCI,MA,EMA,BIAS,TD,WR,DMI等,全部封装，简洁且准确，能非常方便的应用在各自股票股市技术分析，股票自动程序化交易,数字货币BTC等量化等领域.
 
 ## 软件架构
 java最低最低JDK1.8（Java8），Maven聚合父子项目，会逐步开源子模块。
 
 ### quant-data-indicator中指标计算实现说明
-#### 3个重要的类
-1、Indicator：[指标]父类（所有指标都必须继承的抽象父类）
-
-```java
-public abstract class Indicator {
-
-}
-```
-
-2、IndicatorCalculator：[指标计算器]父类（所有[指标计算器]都必须继承的抽象父类）
+#### 4个重要的类
+1、FixedWindowCalculator：固定窗口 计算器
 
 ```java
 /**
- * 指标计算 计算器
+ * 固定窗口 计算器
  * 
  * @author Rootfive
+ * 
  */
-public abstract class IndicatorCalculator<T extends Indicator> {
+public abstract class FixedWindowCalculator<T, FWC extends FixedWindowCalculable> implements Executor<T, FWC> {
 
-	//........
-	//其他代码请看代码实现
-	//........
+	/** 需要计算的数据：指环形固定窗口组成数组中的数据 */
+	protected final transient Object [] circularfixedWindowData;
 
+	/** 环形数组最大长度，固定窗口的时间周期 */
+	protected final transient BigDecimal fwcPeriod;
 
-	/** 环形数组 */
-	protected final transient IndicatorCalculatorCarrier<T>[] circularElementData;
+	/** 执行总数 */
+	protected int executeTotal = 0;
 
-	/** 指标的计算周期或时间周期 */
-	protected final transient BigDecimal periodCapacity;
-	
-	
+	/** 满容计算：指环形数组满容时才会执行计算 */
+	private final transient boolean isFullCapacityCalculate;
 
-	/**
-	 * 执行计算，新的数据
-	 * @param carrier  指标计算载体(未包含结算结果)
-	 * @return 指标计算载体(包含了已经计算的指标结果)
-	 */
-	public T execute(IndicatorCalculatorCarrier<T> carrier) {
-		//........
-		//具体代码请看代码实现
-		//........
+	/** 头数据角标：已经插入环形数组的最新的数据数组角标 */
+	private int headIndex = 0;
+
+	public FixedWindowCalculator(int fwcPeriod, boolean isFullCapacityCalculate) {
+		super();
+		this.circularfixedWindowData =  new Object [fwcPeriod];
+		this.fwcPeriod = new BigDecimal(fwcPeriod);
+		this.isFullCapacityCalculate = isFullCapacityCalculate;
 	}
 
 	/**
@@ -62,6 +53,48 @@ public abstract class IndicatorCalculator<T extends Indicator> {
 	 * @return
 	 */
 	protected abstract T executeCalculate();
+
+
+	//........
+	//其他代码请看代码实现
+	//........
+}
+```
+
+2、Indicator：顶级指标（所有指标都必须继承的抽象父类）
+
+```java
+public abstract class Indicator {
+
+}
+```
+
+3、IndicatorCalculator：[指标计算器]父类（所有[指标计算器]都必须继承的抽象父类）
+
+```java
+/**
+ * 指标计算 计算器
+ * 
+ * @author Rootfive
+ */
+public abstract  class IndicatorCalculator<T extends Indicator>  extends  FixedWindowCalculator<T,IndicatorCalculatorCallback<T>> {
+
+	//........
+	//其他代码请看代码实现
+	//........
+
+	/**
+	 * @param callback 新窗口数据
+	 * @return
+	 */
+	@Override
+	public T execute(IndicatorCalculatorCallback<T> callback) {
+		T indicator = super.execute(callback);
+		callback.setIndicator(indicator);
+		return indicator;
+	}
+	
+
 	
 	
 	//........
@@ -70,21 +103,21 @@ public abstract class IndicatorCalculator<T extends Indicator> {
 }
 ```
 
-3、IndicatorCalculatorCarrier：指标计算载体，用来计算指标并返回
+3、IndicatorCalculatorCallback：指标计算载体，用来计算指标并返回
 
 ```java
 /**
- * 指标计算载体 IndicatorCalculatorCarrier
+ * 指标计算载体
  * 
  * 用来计算指标并返回
  * 
  * @author Rootfive
  * 
- * 注意：本载体下面的行情数据，如果是A股。请一定要使用复权数据，前复权和后复权均可，未复权的数据计算，可能会有问题
+ * 注意：下面的行情数据，如果是A股。请一定要使用复权数据，前复权和后复权均可
  */
 @Data
 @NoArgsConstructor
-public  class IndicatorCalculatorCarrier<T extends Indicator> {
+public  class IndicatorCalculatorCallback<T extends Indicator> implements FixedWindowCalculable{
 
 	/** 计算出来的指标结果 XXX */
 	protected T indicator;
@@ -120,7 +153,6 @@ public  class IndicatorCalculatorCarrier<T extends Indicator> {
 	// 上面的属性值，一般情况下，分时和日行情都有
 	// 下面的属性值，一般情况下，分时和日行情可能有，即便是没有，也可以通过上面的属性计算得出
 	// =======================
-	
 	/** 前收 (元) */
 	protected BigDecimal preClose;
 
@@ -132,12 +164,14 @@ public  class IndicatorCalculatorCarrier<T extends Indicator> {
 
 	/** 价格震幅（%） */
 	protected BigDecimal amplitude;
+	
+	
 
 	/**
 	 * 复合指标计算时，同一个行情，可能需要同时计算多种指标时，需要转换
 	 * @param carrier
 	 */
-	public IndicatorCalculatorCarrier(IndicatorCalculatorCarrier<?> carrier) {
+	public IndicatorCalculatorCallback(IndicatorCalculatorCallback<?> carrier) {
 		super();
 		// this.indicator = indicator;
 		this.symbol = carrier.getSymbol();
@@ -180,12 +214,15 @@ public  class IndicatorCalculatorCarrier<T extends Indicator> {
 /**
  * 计算器
  * @author Rootfive
+ * 百度百科：https://baike.baidu.com/item/KDJ%E6%8C%87%E6%A0%87
  * 
  * 移动平均线，英文名称为MovingAverage，简称MA，原本意思是移动平均。由于我们将其制作成线形，所以一般称为移动平均线，简称均线。
  * 均线是将某一段吋间的收盘价之和除以该周期，比如日线MA5指5天内的收盘价除以5,
  * 其计算公式为： MA(5)=(C1+C2+C3十C4+C5)/5
  * 其中：
  *    Cn为第n日收盘价。例如C1，则为第1日收盘价。
+ *
+ *    用EMA追底，用MA识顶。 例如，用20天EMA判断底部，用20天MA判断顶部。
  */
 @Data
 @NoArgsConstructor
@@ -193,6 +230,7 @@ public  class IndicatorCalculatorCarrier<T extends Indicator> {
 @EqualsAndHashCode(callSuper = true)
 public class MA extends Indicator {
 
+	/** MA计算值  */
 	private BigDecimal value;
 
 	
@@ -224,9 +262,9 @@ public class MA extends Indicator {
 		@Override
 		protected MA executeCalculate() {
 			BigDecimal maValue = null;
-			if (isFullCapacity) {
-				BigDecimal closeSumValue = Arrays.stream(super.circularElementData).map(IndicatorCalculatorCarrier::getClose).reduce(BigDecimal::add).get();
-				maValue = divide(closeSumValue, periodCapacity, 2);
+			if (isFullCapacity()) {
+				BigDecimal closeSumValue = super.getCalculatorListData().stream().map(IndicatorCalculatorCallback::getClose).reduce(BigDecimal::add).get();
+				maValue = divide(closeSumValue, fwcPeriod, 2);
 				return new MA(maValue);
 			}
 			return null;
@@ -235,6 +273,7 @@ public class MA extends Indicator {
 	}
 
 }
+
 
 ```
 
@@ -249,7 +288,7 @@ public class MA extends Indicator {
 	<dependency>
 		<groupId>com.xianlaocai.quant</groupId>
 		<artifactId>quant-data-indicator</artifactId>
-		<version>XLCQ20230902</version>
+		<version>XLCQ20230907</version>
 	</dependency>
 ```
 

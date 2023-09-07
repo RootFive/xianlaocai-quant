@@ -7,17 +7,17 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * 指标计算载体 IndicatorCalculatorCarrier
+ * 指标计算载体
  * 
  * 用来计算指标并返回
  * 
  * @author Rootfive
  * 
- * 注意：本载体下面的行情数据，如果是A股。请一定要使用复权数据，前复权和后复权均可
+ * 注意：下面的行情数据，如果是A股。请一定要使用复权数据，前复权和后复权均可
  */
 @Data
 @NoArgsConstructor
-public  class IndicatorCalculatorCarrier<T extends Indicator> {
+public  class IndicatorCalculatorCallback<T extends Indicator> implements FixedWindowCalculable{
 
 	/** 计算出来的指标结果 XXX */
 	protected T indicator;
@@ -71,7 +71,7 @@ public  class IndicatorCalculatorCarrier<T extends Indicator> {
 	 * 复合指标计算时，同一个行情，可能需要同时计算多种指标时，需要转换
 	 * @param carrier
 	 */
-	public IndicatorCalculatorCarrier(IndicatorCalculatorCarrier<?> carrier) {
+	public IndicatorCalculatorCallback(IndicatorCalculatorCallback<?> carrier) {
 		super();
 		// this.indicator = indicator;
 		this.symbol = carrier.getSymbol();

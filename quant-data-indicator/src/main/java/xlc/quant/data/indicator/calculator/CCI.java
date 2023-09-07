@@ -7,7 +7,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import xlc.quant.data.indicator.Indicator;
 import xlc.quant.data.indicator.IndicatorCalculator;
-import xlc.quant.data.indicator.IndicatorCalculatorCarrier;
+import xlc.quant.data.indicator.IndicatorCalculatorCallback;
 
 /**
  * 顺势指标CCI也包括日CCI指标、周CCI指标、年CCI指标以及分钟CCI指标等很多种类型。
@@ -82,22 +82,22 @@ public class CCI extends Indicator {
 
 		@Override
 		protected CCI executeCalculate() {
-			IndicatorCalculatorCarrier<CCI> head = getHead();
+			IndicatorCalculatorCallback<CCI> head = getHead();
 			BigDecimal TP = divide((head.getHigh().add(head.getLow()).add(head.getClose())),INT_3, 4);
-			if (!isFullCapacity) {
+			if (!isFullCapacity()) {
 				return new CCI(TP);
 			}
 			BigDecimal tpSumValueForMD = TP;
-			for (IndicatorCalculatorCarrier<CCI> indicatorCarrier : super.circularElementData) {
+			for (IndicatorCalculatorCallback<CCI> indicatorCarrier : super.getCalculatorListData()) {
 				CCI cci = indicatorCarrier.getIndicator();
 				if (cci !=null) {
 					tpSumValueForMD = tpSumValueForMD.add(cci.getTp());
 				}
 			}
 					
-			BigDecimal MA = divide(tpSumValueForMD, periodCapacity, 4);
+			BigDecimal MA = divide(tpSumValueForMD, fwcPeriod, 4);
 			BigDecimal sumValueForMD = BigDecimal.ZERO;
-			for (IndicatorCalculatorCarrier<CCI> calculator : super.circularElementData) {
+			for (IndicatorCalculatorCallback<CCI> calculator : super.getCalculatorListData()) {
 
 				CCI cci = calculator.getIndicator();
 				BigDecimal tp = cci !=null ?cci.getTp():TP;
@@ -109,7 +109,7 @@ public class CCI extends Indicator {
 					sumValueForMD = sumValueForMD.add(subtract);
 				}
 			}
-			BigDecimal MD = divide(sumValueForMD, periodCapacity, 4);
+			BigDecimal MD = divide(sumValueForMD, fwcPeriod, 4);
 			BigDecimal cciValue = divide(divide(TP.subtract(MA), MD, 4), multiplier, 4);
 			return new CCI(TP, cciValue);
 		}

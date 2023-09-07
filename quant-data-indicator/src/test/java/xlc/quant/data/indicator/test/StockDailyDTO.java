@@ -19,7 +19,7 @@ import xlc.quant.data.indicator.calculator.MACD;
  */
 @Data
 @NoArgsConstructor
-public class StockDaily  {
+public class StockDailyDTO  {
 
 	/** 证交所（SZ深证 SH上证 BJ北证） */
 	private String exchange;
@@ -116,10 +116,10 @@ public class StockDaily  {
 
 	//复权 信息= XXX
 	/** 前复权行情 */
-	private FuQuanDomain qfq;
+	private FuQuanDomainDTO qfq;
 
 	/** 后复权行情 */
-	private FuQuanDomain hfq;
+	private FuQuanDomainDTO hfq;
 
 	//技术指标= XXX
 	/** KDJ随机指标 */
@@ -133,7 +133,7 @@ public class StockDaily  {
 
 
 	/** TD序列 */
-	private IndicatorDomain indicatorDomain;
+	private IndicatorDomainDTO indicatorDomain;
 	
 
 }

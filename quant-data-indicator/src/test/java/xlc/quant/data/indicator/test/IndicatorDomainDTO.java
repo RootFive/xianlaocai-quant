@@ -12,7 +12,7 @@ import lombok.Data;
  * 指标趋势信息
  */
 @Data
-public class IndicatorDomain {
+public class IndicatorDomainDTO {
 
 	//量价形态 XXX
 	/** K线-连续上涨 */

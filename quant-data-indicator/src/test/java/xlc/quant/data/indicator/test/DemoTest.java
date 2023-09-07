@@ -9,10 +9,11 @@ import java.util.stream.Collectors;
 
 import xlc.quant.data.indicator.Indicator;
 import xlc.quant.data.indicator.IndicatorCalculator;
-import xlc.quant.data.indicator.IndicatorCalculatorCarrier;
+import xlc.quant.data.indicator.IndicatorCalculatorCallback;
 import xlc.quant.data.indicator.calculator.BIAS;
 import xlc.quant.data.indicator.calculator.BOLL;
 import xlc.quant.data.indicator.calculator.CCI;
+import xlc.quant.data.indicator.calculator.DMI;
 import xlc.quant.data.indicator.calculator.EMA;
 import xlc.quant.data.indicator.calculator.KDJ;
 import xlc.quant.data.indicator.calculator.MA;
@@ -25,10 +26,10 @@ import xlc.quant.data.indicator.calculator.innovate.TOPMV;
 public class DemoTest {
     public static void main(String[] args) {
     	
-    	List<StockDaily> listStockDaily = new ArrayList<>();
+    	List<StockDailyDTO> listStockDaily = new ArrayList<>();
     	
     	//个股日线行情按照日期时间正序排序。
-    	List<StockDaily> listStockDailyOrderByTradeDateAsc= listStockDaily .stream().sorted(Comparator.comparing(StockDaily::getTradeDate)).collect(Collectors.toList());
+    	List<StockDailyDTO> listStockDailyOrderByTradeDateAsc= listStockDaily .stream().sorted(Comparator.comparing(StockDailyDTO::getTradeDate)).collect(Collectors.toList());
     	calculateDailyIndicator(listStockDailyOrderByTradeDateAsc);
     }
     
@@ -41,7 +42,7 @@ public class DemoTest {
 	 * @return
 	 */
     @SuppressWarnings("unused")
-	public static List<StockDaily> calculateDailyIndicator(List<StockDaily> listStockDailyOrderByTradeDateAsc) {
+	public static List<StockDailyDTO> calculateDailyIndicator(List<StockDailyDTO> listStockDailyOrderByTradeDateAsc) {
 		//KDJ-计算器
 		IndicatorCalculator<KDJ> kdjCalculator = KDJ.buildCalculator(9, 3, 3);
 		//MACD-计算器
@@ -89,9 +90,16 @@ public class DemoTest {
 		IndicatorCalculator<WR> wr14Calculator = WR.buildCalculator(14);
 		IndicatorCalculator<WR> wr20Calculator = WR.buildCalculator(20);
 
+		
+		IndicatorCalculator<DMI> dmiCalculator = DMI.buildCalculator(14, 6);
+		
 		//上一份日报(下面的循环变量)
-		StockDaily preDaily = null;
-		for (StockDaily daily : listStockDailyOrderByTradeDateAsc) {
+		StockDailyDTO preDaily = null;
+		for (StockDailyDTO daily : listStockDailyOrderByTradeDateAsc) {
+			//DMI-计算
+			DMI dmi = dmiCalculator.execute(createIndicatorCarrier(DMI.class, daily));
+			
+			
 			//KDJ-计算
 			KDJ kdj = kdjCalculator.execute(createIndicatorCarrier(KDJ.class, daily));
 			daily.setKdj(kdj);
@@ -112,12 +120,15 @@ public class DemoTest {
 			// XXX 多参数
 
 			//指标领域-对象
-			IndicatorDomain indicatorDomain = Optional.ofNullable(daily.getIndicatorDomain()).orElse(new IndicatorDomain());
+			IndicatorDomainDTO indicatorDomain = Optional.ofNullable(daily.getIndicatorDomain()).orElse(new IndicatorDomainDTO());
 
 			//指标连续性校验 
 			if (preDaily != null) {
+				
+				
+				
 				//前收指标领域
-				IndicatorDomain preIndicatorDomain = preDaily.getIndicatorDomain();
+				IndicatorDomainDTO preIndicatorDomain = preDaily.getIndicatorDomain();
 
 				//前收指标
 				Integer preKlineRise = Optional.ofNullable(preIndicatorDomain.getKlineRise()).orElse(null);
@@ -210,8 +221,8 @@ public class DemoTest {
 	}
 	
 	
-	public  static <T extends Indicator> IndicatorCalculatorCarrier<T> createIndicatorCarrier(Class<T> clazz, StockDaily daily) {
-		IndicatorCalculatorCarrier<T> indicatorCarrier = new IndicatorCalculatorCarrier<>();
+	public  static <T extends Indicator> IndicatorCalculatorCallback<T> createIndicatorCarrier(Class<T> clazz, StockDailyDTO daily) {
+		IndicatorCalculatorCallback<T> indicatorCarrier = new IndicatorCalculatorCallback<>();
 		
 		//赋值属性
 		indicatorCarrier.setSymbol(daily.getStockCode());
