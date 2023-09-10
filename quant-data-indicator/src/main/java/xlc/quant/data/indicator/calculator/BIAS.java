@@ -68,7 +68,7 @@ public class BIAS extends Indicator {
 			BigDecimal ma = null;
 			if (isFullCapacity()) {
 				currentUsePrice = head.getClose();
-				BigDecimal sumValue = super.getCalculatorListData().stream().map(IndicatorCalculatorCallback::getClose).reduce(BigDecimal::add).get();
+				BigDecimal sumValue = super.getCalculatorDataList().stream().map(IndicatorCalculatorCallback::getClose).reduce(BigDecimal::add).get();
 				ma = divide(sumValue, fwcPeriod, 2);
 			}
 

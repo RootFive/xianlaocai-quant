@@ -62,7 +62,7 @@ public class MA extends Indicator {
 		protected MA executeCalculate() {
 			BigDecimal maValue = null;
 			if (isFullCapacity()) {
-				BigDecimal closeSumValue = super.getCalculatorListData().stream().map(IndicatorCalculatorCallback::getClose).reduce(BigDecimal::add).get();
+				BigDecimal closeSumValue = super.getCalculatorDataList().stream().map(IndicatorCalculatorCallback::getClose).reduce(BigDecimal::add).get();
 				maValue = divide(closeSumValue, fwcPeriod, 2);
 				return new MA(maValue);
 			}

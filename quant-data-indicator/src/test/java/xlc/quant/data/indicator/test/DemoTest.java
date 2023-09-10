@@ -97,25 +97,25 @@ public class DemoTest {
 		StockDailyDTO preDaily = null;
 		for (StockDailyDTO daily : listStockDailyOrderByTradeDateAsc) {
 			//DMI-计算
-			DMI dmi = dmiCalculator.execute(createIndicatorCarrier(DMI.class, daily));
+			DMI dmi = dmiCalculator.input(createIndicatorCarrier(DMI.class, daily));
 			
 			
 			//KDJ-计算
-			KDJ kdj = kdjCalculator.execute(createIndicatorCarrier(KDJ.class, daily));
+			KDJ kdj = kdjCalculator.input(createIndicatorCarrier(KDJ.class, daily));
 			daily.setKdj(kdj);
 
 			//MACD-计算
-			MACD macd = macdCalculator.execute(createIndicatorCarrier(MACD.class, daily));
+			MACD macd = macdCalculator.input(createIndicatorCarrier(MACD.class, daily));
 			daily.setMacd(macd);
 
 			//BOLL-计算
-			BOLL boll = bollCalculator.execute(createIndicatorCarrier(BOLL.class, daily));
+			BOLL boll = bollCalculator.input(createIndicatorCarrier(BOLL.class, daily));
 			daily.setBoll(boll);
 
 			//TOPMV-计算
-			TOPMV top3In20 = topmvCalculator20_3.execute(createIndicatorCarrier(TOPMV.class, daily));
-			TOPMV top4In30 = topmvCalculator30_4.execute(createIndicatorCarrier(TOPMV.class, daily));
-			TOPMV top5In60 = topmvCalculator60_5.execute(createIndicatorCarrier(TOPMV.class, daily));
+			TOPMV top3In20 = topmvCalculator20_3.input(createIndicatorCarrier(TOPMV.class, daily));
+			TOPMV top4In30 = topmvCalculator30_4.input(createIndicatorCarrier(TOPMV.class, daily));
+			TOPMV top5In60 = topmvCalculator60_5.input(createIndicatorCarrier(TOPMV.class, daily));
 
 			// XXX 多参数
 
@@ -155,62 +155,62 @@ public class DemoTest {
 			preDaily = daily;
 
 			//TD九转序列-计算
-			indicatorDomain.setTd(Optional.ofNullable(tdCalculator.execute(createIndicatorCarrier(TD.class, daily)))
+			indicatorDomain.setTd(Optional.ofNullable(tdCalculator.input(createIndicatorCarrier(TD.class, daily)))
 					.map(TD::getValue).orElse(null));
 
 			//MA-计算
-			indicatorDomain.setMa5(Optional.ofNullable(ma5Calculator.execute(createIndicatorCarrier(MA.class, daily)))
+			indicatorDomain.setMa5(Optional.ofNullable(ma5Calculator.input(createIndicatorCarrier(MA.class, daily)))
 					.map(MA::getValue).orElse(null));
-			indicatorDomain.setMa10(Optional.ofNullable(ma10Calculator.execute(createIndicatorCarrier(MA.class, daily)))
+			indicatorDomain.setMa10(Optional.ofNullable(ma10Calculator.input(createIndicatorCarrier(MA.class, daily)))
 					.map(MA::getValue).orElse(null));
-			indicatorDomain.setMa20(Optional.ofNullable(ma20Calculator.execute(createIndicatorCarrier(MA.class, daily)))
+			indicatorDomain.setMa20(Optional.ofNullable(ma20Calculator.input(createIndicatorCarrier(MA.class, daily)))
 					.map(MA::getValue).orElse(null));
-			indicatorDomain.setMa40(Optional.ofNullable(ma40Calculator.execute(createIndicatorCarrier(MA.class, daily)))
+			indicatorDomain.setMa40(Optional.ofNullable(ma40Calculator.input(createIndicatorCarrier(MA.class, daily)))
 					.map(MA::getValue).orElse(null));
-			indicatorDomain.setMa60(Optional.ofNullable(ma60Calculator.execute(createIndicatorCarrier(MA.class, daily)))
+			indicatorDomain.setMa60(Optional.ofNullable(ma60Calculator.input(createIndicatorCarrier(MA.class, daily)))
 					.map(MA::getValue).orElse(null));
 					
 
 			//EMA-计算
-			indicatorDomain.setEma5(Optional.ofNullable(ema5Calculator.execute(createIndicatorCarrier(EMA.class, daily)))
+			indicatorDomain.setEma5(Optional.ofNullable(ema5Calculator.input(createIndicatorCarrier(EMA.class, daily)))
 					.map(EMA::getValue).orElse(null));
-			indicatorDomain.setEma10(Optional.ofNullable(ema10Calculator.execute(createIndicatorCarrier(EMA.class, daily)))
+			indicatorDomain.setEma10(Optional.ofNullable(ema10Calculator.input(createIndicatorCarrier(EMA.class, daily)))
 					.map(EMA::getValue).orElse(null));
-			indicatorDomain.setEma20(Optional.ofNullable(ema20Calculator.execute(createIndicatorCarrier(EMA.class, daily)))
+			indicatorDomain.setEma20(Optional.ofNullable(ema20Calculator.input(createIndicatorCarrier(EMA.class, daily)))
 					.map(EMA::getValue).orElse(null));
-			indicatorDomain.setEma60(Optional.ofNullable(ema60Calculator.execute(createIndicatorCarrier(EMA.class, daily)))
+			indicatorDomain.setEma60(Optional.ofNullable(ema60Calculator.input(createIndicatorCarrier(EMA.class, daily)))
 					.map(EMA::getValue).orElse(null));
 					
 
 			//RSI-计算
-			indicatorDomain.setRsi6(Optional.ofNullable(rsi6Calculator.execute(createIndicatorCarrier(RSI.class, daily)))
+			indicatorDomain.setRsi6(Optional.ofNullable(rsi6Calculator.input(createIndicatorCarrier(RSI.class, daily)))
 					.map(RSI::getValue).orElse(null));
-			indicatorDomain.setRsi12(Optional.ofNullable(rsi12Calculator.execute(createIndicatorCarrier(RSI.class, daily)))
+			indicatorDomain.setRsi12(Optional.ofNullable(rsi12Calculator.input(createIndicatorCarrier(RSI.class, daily)))
 					.map(RSI::getValue).orElse(null));
-			indicatorDomain.setRsi24(Optional.ofNullable(rsi24Calculator.execute(createIndicatorCarrier(RSI.class, daily)))
+			indicatorDomain.setRsi24(Optional.ofNullable(rsi24Calculator.input(createIndicatorCarrier(RSI.class, daily)))
 					.map(RSI::getValue).orElse(null));
 					
 
 			//BIAS-计算
-			indicatorDomain.setBias6(Optional.ofNullable(bias6Calculator.execute(createIndicatorCarrier(BIAS.class, daily)))
+			indicatorDomain.setBias6(Optional.ofNullable(bias6Calculator.input(createIndicatorCarrier(BIAS.class, daily)))
 					.map(BIAS::getValue).orElse(null));
-			indicatorDomain.setBias12(Optional.ofNullable(bias12Calculator.execute(createIndicatorCarrier(BIAS.class, daily)))
+			indicatorDomain.setBias12(Optional.ofNullable(bias12Calculator.input(createIndicatorCarrier(BIAS.class, daily)))
 					.map(BIAS::getValue).orElse(null));
-			indicatorDomain.setBias24(Optional.ofNullable(bias24Calculator.execute(createIndicatorCarrier(BIAS.class, daily)))
+			indicatorDomain.setBias24(Optional.ofNullable(bias24Calculator.input(createIndicatorCarrier(BIAS.class, daily)))
 					.map(BIAS::getValue).orElse(null));
 
 			//CCI-计算
-			BigDecimal cci14 = cci14Calculator.execute(createIndicatorCarrier(CCI.class, daily)).getValue();
+			BigDecimal cci14 = cci14Calculator.input(createIndicatorCarrier(CCI.class, daily)).getValue();
 			indicatorDomain.setCci14(cci14);
 
 			//WR-计算
-			indicatorDomain.setWr6(Optional.ofNullable(wr6Calculator.execute(createIndicatorCarrier(WR.class, daily)))
+			indicatorDomain.setWr6(Optional.ofNullable(wr6Calculator.input(createIndicatorCarrier(WR.class, daily)))
 					.map(WR::getValue).orElse(null));
-			indicatorDomain.setWr10(Optional.ofNullable(wr10Calculator.execute(createIndicatorCarrier(WR.class, daily)))
+			indicatorDomain.setWr10(Optional.ofNullable(wr10Calculator.input(createIndicatorCarrier(WR.class, daily)))
 					.map(WR::getValue).orElse(null));
-			indicatorDomain.setWr14(Optional.ofNullable(wr14Calculator.execute(createIndicatorCarrier(WR.class, daily)))
+			indicatorDomain.setWr14(Optional.ofNullable(wr14Calculator.input(createIndicatorCarrier(WR.class, daily)))
 					.map(WR::getValue).orElse(null));
-			indicatorDomain.setWr20(Optional.ofNullable(wr20Calculator.execute(createIndicatorCarrier(WR.class, daily)))
+			indicatorDomain.setWr20(Optional.ofNullable(wr20Calculator.input(createIndicatorCarrier(WR.class, daily)))
 					.map(WR::getValue).orElse(null));
 
 			//指标领域-赋值

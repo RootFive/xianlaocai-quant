@@ -1,5 +1,7 @@
 package xlc.quant.data.indicator.calculator;
 
+import static java.math.BigDecimal.valueOf;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Comparator;
@@ -41,6 +43,11 @@ public class KDJ extends Indicator {
 	/** KDJ-J值 */
 	private BigDecimal j;
 
+	/**
+	 * @param k
+	 * @param d
+	 * 
+	 */
 	public KDJ(BigDecimal k, BigDecimal d) {
 		super();
 		this.k = k;
@@ -72,7 +79,15 @@ public class KDJ extends Indicator {
 	 * @author Rootfive
 	 */
 	private static class KDJCalculator extends IndicatorCalculator<KDJ> {
-
+		/** 正整数：2 */
+		private static final BigDecimal INT_2 = new BigDecimal(2);
+		/** 正整数：3 */
+		private static final BigDecimal INT_3 = new BigDecimal(3);
+		/**  正整数：50 */
+		private static final BigDecimal INT_50 = valueOf(50);
+		
+		//常量 XXX==========分隔符号
+		
 		/** K值的计算周期 */
 		private final BigDecimal kCycle;
 
@@ -97,13 +112,15 @@ public class KDJ extends Indicator {
 			// 第收盘价
 			BigDecimal valueCn = headData.getClose();
 			// Hn为n日内的最高价
-			BigDecimal valueHn = super.getCalculatorListData().stream().max(Comparator.comparing(IndicatorCalculatorCallback::getHigh)).get().getHigh();
+			BigDecimal valueHn = super.getCalculatorDataList().stream().max(Comparator.comparing(IndicatorCalculatorCallback::getHigh)).get().getHigh();
 			// Ln为n日内的最低价
-			BigDecimal valueLn = super.getCalculatorListData().stream().min(Comparator.comparing(IndicatorCalculatorCallback::getLow)).get().getLow();
+			BigDecimal valueLn = super.getCalculatorDataList().stream().min(Comparator.comparing(IndicatorCalculatorCallback::getLow)).get().getLow();
 					
 
 			// 计算公式为：n日RSV=（Cn－Ln）÷（Hn－Ln）×100,四舍五入，保留4位小数
-			BigDecimal rsvValue = (valueCn.subtract(valueLn)).divide((valueHn.subtract(valueLn)), 4, RoundingMode.HALF_UP).multiply(HUNDRED);
+//			BigDecimal rsvValue = (valueCn.subtract(valueLn)).divide((valueHn.subtract(valueLn)), 4, RoundingMode.HALF_UP).multiply(HUNDRED);
+			
+			BigDecimal rsvValue = divideByPct((valueCn.subtract(valueLn)),(valueHn.subtract(valueLn)));
 					
 			/**
 			 * 计算K值: 当日K值=2/3×前一日K值＋1/3×当日RSV 计算D值： 当日D值=2/3×前一日D值＋1/3×当日K值 计算J值：

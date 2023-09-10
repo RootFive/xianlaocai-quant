@@ -76,9 +76,9 @@ public class WR extends Indicator {
 			BigDecimal maxHigh = null;
 			BigDecimal minLow = null;
 
-			maxHigh = super.getCalculatorListData().stream().max(Comparator.comparing(IndicatorCalculatorCallback::getHigh))
+			maxHigh = super.getCalculatorDataList().stream().max(Comparator.comparing(IndicatorCalculatorCallback::getHigh))
 					.get().getHigh();
-			minLow = super.getCalculatorListData().stream().min(Comparator.comparing(IndicatorCalculatorCallback::getLow))
+			minLow = super.getCalculatorDataList().stream().min(Comparator.comparing(IndicatorCalculatorCallback::getLow))
 					.get().getLow();
 			// 计算公式：W%R=（Hn—C）÷（Hn—Ln）×100其中
 			BigDecimal wrValue = divideByPct(maxHigh.subtract(headClose), maxHigh.subtract(minLow));

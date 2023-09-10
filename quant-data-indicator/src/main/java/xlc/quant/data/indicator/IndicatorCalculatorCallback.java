@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
  */
 @Data
 @NoArgsConstructor
-public  class IndicatorCalculatorCallback<T extends Indicator> implements FixedWindowCalculable{
+public  class IndicatorCalculatorCallback<T extends Indicator> implements CircularFixedWindowCalculable{
 
 	/** 计算出来的指标结果 XXX */
 	protected T indicator;

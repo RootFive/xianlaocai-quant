@@ -75,7 +75,7 @@ public class TOPMV extends Indicator {
 		@Override
 		protected TOPMV executeCalculate() {
 			// 成交额-所有
-			List<BigDecimal> listAmount = super.getCalculatorListData().stream().map(IndicatorCalculatorCallback::getAmount).collect(Collectors.toList());
+			List<BigDecimal> listAmount = super.getCalculatorDataList().stream().map(IndicatorCalculatorCallback::getAmount).collect(Collectors.toList());
 			// 倒叙
 			BigDecimal reverseOrderSumAmount = listAmount.stream().sorted(Comparator.reverseOrder()).limit(top).reduce(BigDecimal::add).get();
 			/** 成交额-最高值-前X个均值 */
@@ -87,7 +87,7 @@ public class TOPMV extends Indicator {
 			BigDecimal atl = divide(naturalOrderSumAmount, topValue, 2);
 
 			// 成交量-所有
-			List<BigDecimal> listVolume = super.getCalculatorListData().stream().map(IndicatorCalculatorCallback::getVolume).collect(Collectors.toList());
+			List<BigDecimal> listVolume = super.getCalculatorDataList().stream().map(IndicatorCalculatorCallback::getVolume).collect(Collectors.toList());
 
 					
 			// 倒叙

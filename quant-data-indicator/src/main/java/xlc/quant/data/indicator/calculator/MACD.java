@@ -68,7 +68,11 @@ public class MACD extends Indicator {
 	 * @author Rootfive
 	 */
 	private static class MACDCalculator extends IndicatorCalculator<MACD> {
-
+		/** 正整数：2 */
+		private static final BigDecimal INT_2 = new BigDecimal(2);
+		//常量 XXX==========分隔符号
+		
+		
 		private final IndicatorCalculator<EMA> fastEMAFactor;
 		private final IndicatorCalculator<EMA> slowEMAFactor;
 
@@ -87,9 +91,9 @@ public class MACD extends Indicator {
 			IndicatorCalculatorCallback<MACD> current = getHead();
 
 			// 快线EMA
-			BigDecimal fastEma = fastEMAFactor.execute(new IndicatorCalculatorCallback<EMA>(current)).getValue();
+			BigDecimal fastEma = fastEMAFactor.input(new IndicatorCalculatorCallback<EMA>(current)).getValue();
 			// 慢线EMA
-			BigDecimal slowEma = slowEMAFactor.execute(new IndicatorCalculatorCallback<EMA>(current)).getValue();
+			BigDecimal slowEma = slowEMAFactor.input(new IndicatorCalculatorCallback<EMA>(current)).getValue();
 			// 计算离差值(DIF)
 			BigDecimal dif = fastEma.subtract(slowEma);
 

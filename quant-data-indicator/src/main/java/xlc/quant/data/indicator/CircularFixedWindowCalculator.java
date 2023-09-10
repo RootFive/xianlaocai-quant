@@ -9,17 +9,17 @@ import java.util.stream.Collectors;
 
 
 /**
- * 固定窗口 计算器
+ * 环形固定窗口 计算器
  * 
  * @author Rootfive
  * 
  */
-public abstract class FixedWindowCalculator<T, FWC extends FixedWindowCalculable> implements Executor<T, FWC> {
+public abstract class CircularFixedWindowCalculator<T, FWC extends CircularFixedWindowCalculable> {
 
-	/** 需要计算的数据：指环形固定窗口组成数组中的数据 */
-	protected final transient Object [] circularfixedWindowData;
+	/** 需要计算的数据：指[固定窗口环形数组]中的数据 */
+	protected final transient Object [] circularData;
 
-	/** 环形数组最大长度，固定窗口的时间周期 */
+	/** 环形数组最大长度，[固定窗口环形数组]时间周期 */
 	protected final transient BigDecimal fwcPeriod;
 
 	/** 执行总数 */
@@ -31,10 +31,15 @@ public abstract class FixedWindowCalculator<T, FWC extends FixedWindowCalculable
 	/** 头数据角标：已经插入环形数组的最新的数据数组角标 */
 	private int headIndex = 0;
 
-	public FixedWindowCalculator(int fwcPeriod, boolean isFullCapacityCalculate) {
+	/**
+	 * 
+	 * @param fwcMax  固定窗口最大值，也就是[固定窗口环形数组]的长度
+	 * @param isFullCapacityCalculate
+	 */
+	public CircularFixedWindowCalculator(int fwcMax, boolean isFullCapacityCalculate) {
 		super();
-		this.circularfixedWindowData =  new Object [fwcPeriod];
-		this.fwcPeriod = new BigDecimal(fwcPeriod);
+		this.circularData =  new Object [fwcMax];
+		this.fwcPeriod = new BigDecimal(fwcMax);
 		this.isFullCapacityCalculate = isFullCapacityCalculate;
 	}
 
@@ -49,11 +54,11 @@ public abstract class FixedWindowCalculator<T, FWC extends FixedWindowCalculable
 	// ==========XXX===================
 
 	/**
+	 * 输入数据
 	 * @param newFwc 新的固定窗口数据
 	 * @return
 	 */
-	@Override
-	public synchronized T execute(FWC newFwc) {
+	public synchronized T input(FWC newFwc) {
 		boolean addResult = addFirst(newFwc);
 		if (addResult) {
 			// 新增成功
@@ -89,7 +94,7 @@ public abstract class FixedWindowCalculator<T, FWC extends FixedWindowCalculable
 				++this.executeTotal;
 				// 指针移动-循环数组核心
 				// [newFwc]相较于[head],是一个新的数据，需要刷新 头数据角标
-				if (this.headIndex == (this.circularfixedWindowData.length - 1)) {
+				if (this.headIndex == (this.circularData.length - 1)) {
 					// 当前[head] 等于 缓冲区长度-1
 					// 说明：此时环形数组的已经满了，环形数组中[head]角标指向数组最后一个空位，要想更新新元素，头元素需要指定数组角标为0的位置
 					this.headIndex = 0;
@@ -101,7 +106,7 @@ public abstract class FixedWindowCalculator<T, FWC extends FixedWindowCalculable
 			this.executeTotal = 1;
 		}
 		// 设置头数据-不更新元素和元素的角标
-		this.circularfixedWindowData[this.headIndex] = newFwc;
+		this.circularData[this.headIndex] = newFwc;
 		//
 		return true;
 	}
@@ -112,16 +117,16 @@ public abstract class FixedWindowCalculator<T, FWC extends FixedWindowCalculable
 	 * @return int
 	 */
 	private int getTailIndex() {
-		int tailIndex = this.headIndex + 1 - this.circularfixedWindowData.length;
-		if (tailIndex < 0) {
-			tailIndex = tailIndex + this.circularfixedWindowData.length;
+		if (this.headIndex == this.circularData.length-1 ) {
+			return 0;
+		}else {
+			return this.headIndex + 1;
 		}
-		return tailIndex;
 	}
 
 	@SuppressWarnings("unchecked")
-	FWC getCircularArrayElement(int index) {
-        return (FWC) this.circularfixedWindowData[index];
+	private FWC getCircularArrayElement(int index) {
+        return (FWC) this.circularData[index];
     }
 	
 	
@@ -144,29 +149,26 @@ public abstract class FixedWindowCalculator<T, FWC extends FixedWindowCalculable
 	}
 
 	/**
-	 * 指定角标获取元素
-	 * 
-	 * @param descOrderNum，倒序的执行顺序，有效范围是：[1,circularfixedWindowData.length]
-	 * @return
+	 * @param prevNum  按照倒叙插入顺序，获取指定前面输入的[固定窗口元素数据]，有效范围是：[0,circularData.length-1]
+	 * @return 指定前面输入的[固定窗口元素数据]
 	 * 
 	 * <pre>
-	 * 	 注意：descOrderNum的有效范围是：[1,circularfixedWindowData.length]
-	 * 	 小于1返回第一个
-	 * 	 大于circularfixedWindowData.length 返回环形数组中最早插入的数据
+	 *  1、prevNum 有效值范围是：[0,circularData.length-1]
+	 *  2、当 prevNum <= 0 时，返回是循环数组的[Head头数据]，也就是[环形数组内 最新插入 的数据] 
+	 *  3、当 prevNum >= this.circularData.length -1 时，返回是循环数组的[Tail尾巴数据]，也就是[环形数组内 最早新插入 的数据] 
 	 * </pre>
 	 */
-	public FWC getByOrderDesc(int descOrderNum) {
-		if (descOrderNum < 1) {
+	public FWC getPrevByNum(int prevNum) {
+		if (prevNum <= 0) {
 			return this.getHead();
-		} else if (descOrderNum > this.circularfixedWindowData.length) {
+		}else if (prevNum >= this.circularData.length -1) {
 			return this.getTail();
 		}
-
-		int needIndex = this.headIndex - (descOrderNum - 1);
-		if (needIndex < 0) {
-			needIndex = needIndex + this.circularfixedWindowData.length;
+		
+		int needIndex = this.headIndex - prevNum;
+		if (needIndex <= -1) {
+			needIndex = needIndex + this.circularData.length;
 		}
-
 		return this.getCircularArrayElement(needIndex);
 	}
 
@@ -176,7 +178,7 @@ public abstract class FixedWindowCalculator<T, FWC extends FixedWindowCalculable
 	 * @return
 	 */
 	public FWC getPrev() {
-		return getByOrderDesc(2);
+		return getPrevByNum(1);
 	}
 
 	/**
@@ -184,17 +186,17 @@ public abstract class FixedWindowCalculator<T, FWC extends FixedWindowCalculable
 	 * @param limit
 	 * @return
 	 */
-	public List<FWC> getCalculatorListData(int limit ) {
-		return getCalculatorListData().stream().sorted(Comparator.comparing(FWC::getTradeDateTime).reversed()).limit(limit).collect(Collectors.toList());
+	public List<FWC> getCalculatorDataList(int limit ) {
+		return getCalculatorDataList().stream().sorted(Comparator.comparing(FWC::getTradeDateTime).reversed()).limit(limit).collect(Collectors.toList());
 	}
 	
 	/**
 	 * 获取执行器数据-List格式(list按照日期倒叙)
 	 */
 	@SuppressWarnings("unchecked")
-	public List<FWC> getCalculatorListData() {
-		List<FWC> arrayList = new ArrayList<>(circularfixedWindowData.length);
-		for (Object fixedWindowData : circularfixedWindowData) {
+	public List<FWC> getCalculatorDataList() {
+		List<FWC> arrayList = new ArrayList<>(circularData.length);
+		for (Object fixedWindowData : circularData) {
 			if (fixedWindowData != null) {
 				arrayList.add((FWC)fixedWindowData);
 			}
@@ -206,7 +208,7 @@ public abstract class FixedWindowCalculator<T, FWC extends FixedWindowCalculable
 	 * 是否满容量：指环形数组是否满容量
 	 */
 	public boolean isFullCapacity() {
-		return executeTotal >= this.circularfixedWindowData.length ? true : false;
+		return executeTotal >= this.circularData.length ? true : false;
 	}
 
 	/**
@@ -215,6 +217,6 @@ public abstract class FixedWindowCalculator<T, FWC extends FixedWindowCalculable
 	 * @return
 	 */
 	public int size() {
-		return isFullCapacity() ? this.circularfixedWindowData.length : executeTotal;
+		return isFullCapacity() ? this.circularData.length : executeTotal;
 	}
 }

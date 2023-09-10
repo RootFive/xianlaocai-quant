@@ -18,17 +18,17 @@ java最低最低JDK1.8（Java8），Maven聚合父子项目，会逐步开源子
 
 ```java
 /**
- * 固定窗口 计算器
+ * 环形固定窗口 计算器
  * 
  * @author Rootfive
  * 
  */
-public abstract class FixedWindowCalculator<T, FWC extends FixedWindowCalculable> implements Executor<T, FWC> {
+public abstract class CircularFixedWindowCalculator<T, FWC extends CircularFixedWindowCalculable> {
 
-	/** 需要计算的数据：指环形固定窗口组成数组中的数据 */
-	protected final transient Object [] circularfixedWindowData;
+	/** 需要计算的数据：指[固定窗口环形数组]中的数据 */
+	protected final transient Object [] circularData;
 
-	/** 环形数组最大长度，固定窗口的时间周期 */
+	/** 环形数组最大长度，[固定窗口环形数组]时间周期 */
 	protected final transient BigDecimal fwcPeriod;
 
 	/** 执行总数 */
@@ -40,19 +40,44 @@ public abstract class FixedWindowCalculator<T, FWC extends FixedWindowCalculable
 	/** 头数据角标：已经插入环形数组的最新的数据数组角标 */
 	private int headIndex = 0;
 
-	public FixedWindowCalculator(int fwcPeriod, boolean isFullCapacityCalculate) {
+	/**
+	 * 
+	 * @param fwcMax  固定窗口最大值，也就是[固定窗口环形数组]的长度
+	 * @param isFullCapacityCalculate
+	 */
+	public CircularFixedWindowCalculator(int fwcMax, boolean isFullCapacityCalculate) {
 		super();
-		this.circularfixedWindowData =  new Object [fwcPeriod];
-		this.fwcPeriod = new BigDecimal(fwcPeriod);
+		this.circularData =  new Object [fwcMax];
+		this.fwcPeriod = new BigDecimal(fwcMax);
 		this.isFullCapacityCalculate = isFullCapacityCalculate;
 	}
 
+	// ==========XXX===================
 	/**
 	 * 执行计算，由子类具体某个指标的计算器实现
 	 * 
 	 * @return
 	 */
 	protected abstract T executeCalculate();
+
+	// ==========XXX===================
+
+	/**
+	 * 输入数据
+	 * @param newFwc 新的固定窗口数据
+	 * @return
+	 */
+	public synchronized T input(FWC newFwc) {
+		boolean addResult = addFirst(newFwc);
+		if (addResult) {
+			// 新增成功
+			if (!isFullCapacityCalculate || (isFullCapacityCalculate && this.isFullCapacity())) {
+				// 1、不是满容计算 [或] 2满容计算且已经满容，二者条件满足其中一种。均可执行计算（指标）
+				return executeCalculate();
+			}
+		}
+		return null;
+	}
 
 
 	//........
@@ -77,7 +102,8 @@ public abstract class Indicator {
  * 
  * @author Rootfive
  */
-public abstract  class IndicatorCalculator<T extends Indicator>  extends  FixedWindowCalculator<T,IndicatorCalculatorCallback<T>> {
+public abstract  class IndicatorCalculator<T extends Indicator>  extends  CircularFixedWindowCalculator<T,IndicatorCalculatorCallback<T>> {
+
 
 	//........
 	//其他代码请看代码实现
@@ -117,7 +143,7 @@ public abstract  class IndicatorCalculator<T extends Indicator>  extends  FixedW
  */
 @Data
 @NoArgsConstructor
-public  class IndicatorCalculatorCallback<T extends Indicator> implements FixedWindowCalculable{
+public  class IndicatorCalculatorCallback<T extends Indicator> implements CircularFixedWindowCalculable{
 
 	/** 计算出来的指标结果 XXX */
 	protected T indicator;
@@ -293,7 +319,7 @@ Maven地址2（更新较慢）：https://mvnrepository.com/artifact/com.xianlaoc
 	<dependency>
 		<groupId>com.xianlaocai.quant</groupId>
 		<artifactId>quant-data-indicator</artifactId>
-		<version>XLCQ20230907</version>
+		<version>XLCQ20230910</version>
 	</dependency>
 ```
 

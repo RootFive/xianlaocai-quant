@@ -11,17 +11,7 @@ import java.math.RoundingMode;
  * @author Rootfive
  * 
  */
-public abstract  class IndicatorCalculator<T extends Indicator>  extends  FixedWindowCalculator<T,IndicatorCalculatorCallback<T>> {
-	
-	/** 负整数：-1 */
-	public static final BigDecimal MINUS_INT_1 = valueOf(-1);
-	
-	/** 正整数：2 */
-	public static final BigDecimal INT_2 = valueOf(2);
-	/** 正整数：3 */
-	public static final BigDecimal INT_3 = valueOf(3);
-	/**  正整数：50 */
-	public static final BigDecimal INT_50 = valueOf(50);
+public abstract  class IndicatorCalculator<T extends Indicator>  extends  CircularFixedWindowCalculator<T,IndicatorCalculatorCallback<T>> {
 	/** 百:10x10 */
 	public static final BigDecimal HUNDRED = valueOf(100);
 
@@ -38,8 +28,8 @@ public abstract  class IndicatorCalculator<T extends Indicator>  extends  FixedW
 	 * @return
 	 */
 	@Override
-	public T execute(IndicatorCalculatorCallback<T> callback) {
-		T indicator = super.execute(callback);
+	public T input(IndicatorCalculatorCallback<T> callback) {
+		T indicator = super.input(callback);
 		callback.setIndicator(indicator);
 		return indicator;
 	}
@@ -124,5 +114,27 @@ public abstract  class IndicatorCalculator<T extends Indicator>  extends  FixedW
 			return null;
 		}
 		return minuend.subtract(subtrahend);
+	}
+	
+	
+	/**
+	 * 求平均数
+	 * @param scale
+	 * @param numbers
+	 * @return
+	 */
+	public static BigDecimal average(int scale,BigDecimal ...numbers ) {
+		if (numbers == null) {
+			return null;
+		}
+		int  sumSize = 0;
+		BigDecimal sum = BigDecimal.ZERO;
+		for (BigDecimal number : numbers) {
+			if (number !=null) {
+				sum = sum.add(number);
+				++sumSize;
+			}
+		}
+		return sum.divide(new BigDecimal(sumSize),scale, RoundingMode.HALF_UP);
 	}
 }

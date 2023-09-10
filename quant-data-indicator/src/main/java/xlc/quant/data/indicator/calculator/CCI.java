@@ -83,12 +83,13 @@ public class CCI extends Indicator {
 		@Override
 		protected CCI executeCalculate() {
 			IndicatorCalculatorCallback<CCI> head = getHead();
-			BigDecimal TP = divide((head.getHigh().add(head.getLow()).add(head.getClose())),INT_3, 4);
+//			BigDecimal TP = divide((head.getHigh().add(head.getLow()).add(head.getClose())),INT_3, 4);
+			BigDecimal TP = average(4,head.getHigh(),head.getLow(),head.getClose());
 			if (!isFullCapacity()) {
 				return new CCI(TP);
 			}
 			BigDecimal tpSumValueForMD = TP;
-			for (IndicatorCalculatorCallback<CCI> indicatorCarrier : super.getCalculatorListData()) {
+			for (IndicatorCalculatorCallback<CCI> indicatorCarrier : super.getCalculatorDataList()) {
 				CCI cci = indicatorCarrier.getIndicator();
 				if (cci !=null) {
 					tpSumValueForMD = tpSumValueForMD.add(cci.getTp());
@@ -97,14 +98,14 @@ public class CCI extends Indicator {
 					
 			BigDecimal MA = divide(tpSumValueForMD, fwcPeriod, 4);
 			BigDecimal sumValueForMD = BigDecimal.ZERO;
-			for (IndicatorCalculatorCallback<CCI> calculator : super.getCalculatorListData()) {
+			for (IndicatorCalculatorCallback<CCI> calculator : super.getCalculatorDataList()) {
 
 				CCI cci = calculator.getIndicator();
 				BigDecimal tp = cci !=null ?cci.getTp():TP;
 				BigDecimal subtract = MA.subtract(tp);
 				
 				if (subtract.compareTo(BigDecimal.ZERO) < 0) {
-					sumValueForMD = sumValueForMD.add(subtract.multiply(MINUS_INT_1));
+					sumValueForMD = sumValueForMD.add(subtract.abs());
 				} else {
 					sumValueForMD = sumValueForMD.add(subtract);
 				}

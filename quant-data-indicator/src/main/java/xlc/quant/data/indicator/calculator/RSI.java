@@ -95,7 +95,7 @@ public class RSI extends Indicator {
 				BigDecimal sumUp = BigDecimal.ZERO;
 				// 跌额之和
 				BigDecimal sumDown = BigDecimal.ZERO;
-				for (IndicatorCalculatorCallback<RSI> calculate : super.getCalculatorListData()) {
+				for (IndicatorCalculatorCallback<RSI> calculate : super.getCalculatorDataList()) {
 					BigDecimal changePrice = calculate.getPriceChange();
 					if (changePrice == null) {
 						// 第一根K线可能没有统计到涨跌幅，跳过
@@ -130,9 +130,7 @@ public class RSI extends Indicator {
 
 				if (compareTo < 0) {
 					emaUp = (prevEmaUp.multiply(α)).add((BigDecimal.ZERO.multiply(β)));
-
-					BigDecimal changesNegative = changePrice.multiply(MINUS_INT_1);
-					emaDown = (prevEmaDown.multiply(α)).add((changesNegative.multiply(β)));
+					emaDown = (prevEmaDown.multiply(α)).add((changePrice.abs().multiply(β)));
 				}
 
 				if (compareTo == 0) {

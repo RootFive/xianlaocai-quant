@@ -68,6 +68,11 @@ public class DMI extends Indicator {
 	 * @author Rootfive
 	 */
 	private static class DMICalculator extends IndicatorCalculator<DMI> {
+		/** 正整数：2 */
+		private static final BigDecimal INT_2 = new BigDecimal(2);
+		//常量 XXX==========分隔符号
+		
+		
 		/** 趋向周期 */
 		private final int adxPeriod;
 		private final BigDecimal adxPeriodDecimal;
@@ -123,11 +128,11 @@ public class DMI extends Indicator {
 			getHead().setIndicator(dmi);
 		
 			
-			BigDecimal trSum = super.getCalculatorListData().stream().map(IndicatorCalculatorCallback::getIndicator)
+			BigDecimal trSum = super.getCalculatorDataList().stream().map(IndicatorCalculatorCallback::getIndicator)
 					.map(DMI::getTr).reduce(BigDecimal.ZERO, BigDecimal::add);
-			BigDecimal dmpSum = super.getCalculatorListData().stream().map(IndicatorCalculatorCallback::getIndicator)
+			BigDecimal dmpSum = super.getCalculatorDataList().stream().map(IndicatorCalculatorCallback::getIndicator)
 					.map(DMI::getDmp).reduce(BigDecimal.ZERO, BigDecimal::add);
-			BigDecimal dmmSum = super.getCalculatorListData().stream().map(IndicatorCalculatorCallback::getIndicator)
+			BigDecimal dmmSum = super.getCalculatorDataList().stream().map(IndicatorCalculatorCallback::getIndicator)
 					.map(DMI::getDmm).reduce(BigDecimal.ZERO, BigDecimal::add);
 
 			BigDecimal dip = divideByPct(dmpSum, trSum);
@@ -150,7 +155,7 @@ public class DMI extends Indicator {
 			}
 			
 			BigDecimal adx = null;
-			BigDecimal dxSum = super.getCalculatorListData(adxPeriod).stream()
+			BigDecimal dxSum = super.getCalculatorDataList(adxPeriod).stream()
 					.map(IndicatorCalculatorCallback::getIndicator).map(DMI::getDx).reduce(BigDecimal.ZERO,BigDecimal::add);
 			adx = divide(dxSum, adxPeriodDecimal, 2);
 			
@@ -160,9 +165,10 @@ public class DMI extends Indicator {
 			dmi.setAdx(adx);
 
 			BigDecimal adxr = null;
-			BigDecimal adxByPrevAdxPeriod = getByOrderDesc(adxPeriod + 1).getIndicator().getAdx();
+			BigDecimal adxByPrevAdxPeriod = getPrevByNum(adxPeriod).getIndicator().getAdx();
 			if (adxByPrevAdxPeriod != null) {
 				adxr = divide(adx.add(adxByPrevAdxPeriod), INT_2, 2);
+				average(2, adx,adxByPrevAdxPeriod);
 			}
 			dmi.setAdxr(adxr);
 

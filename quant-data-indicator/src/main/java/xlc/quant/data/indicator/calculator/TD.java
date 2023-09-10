@@ -62,7 +62,7 @@ public class TD extends Indicator {
 
 		@Override
 		protected TD executeCalculate() {
-			List<IndicatorCalculatorCallback<TD>> calculatorListData = getCalculatorListData();
+			List<IndicatorCalculatorCallback<TD>> calculatorListData = getCalculatorDataList();
 
 			if (calculatorListData.size() < (1 + moveSize)) {
 				return null;
@@ -70,7 +70,7 @@ public class TD extends Indicator {
 
 			// 第一根
 			IndicatorCalculatorCallback<TD> current = getHead();
-			IndicatorCalculatorCallback<TD> compareMove = getByOrderDesc(1 + moveSize);
+			IndicatorCalculatorCallback<TD> compareMove = getPrevByNum(moveSize);
 			IndicatorCalculatorCallback<TD> prev = getPrev();
 
 			BigDecimal currentClose = current.getClose();

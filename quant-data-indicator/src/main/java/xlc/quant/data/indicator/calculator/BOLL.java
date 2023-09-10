@@ -70,22 +70,28 @@ public class BOLL extends Indicator {
 	 * @author Rootfive
 	 */
 	private static class BOLLCalculator extends IndicatorCalculator<BOLL> {
-
+		/** K为参数，可根据股票的特性来做相应的调整，一般默认为2 */
+		private static final BigDecimal DEFAULT_K = new BigDecimal(2);
+		/** 布林线指标的参数N,指的是K线的个数,默认20 */
+		private static final int DEFAULT_PERIOD = 20;
+		
+		
+		/** MA计算器  */
 		private final IndicatorCalculator<MA> maCalculator;
 
 		/** K为参数，可根据股票的特性来做相应的调整，一般默认为2 */
-		public final BigDecimal k;
+		private final BigDecimal k;
 
 		/**
 		 * 各大股票交易软件默认N是20，所以MB等于当日20日均线值，（K为参数，可根据股票的特性来做相应的调整，一般默认为2）
 		 * 
-		 * @param capacity 布林线指标的参数N,指的是K线的个数,默认20
+		 * @param period 布林线指标的参数N,指的是K线的个数,默认20
 		 * @param k        K为参数，可根据股票的特性来做相应的调整，一般默认为2
 		 */
-		BOLLCalculator(int capacity, BigDecimal k) {
-			super((capacity <= 0 ? 20 : capacity), false);
-			this.maCalculator = MA.buildCalculator(capacity <= 0 ? 20 : capacity);
-			this.k = (k == null || k.longValue() <= 0) ? INT_2 : k;
+		BOLLCalculator(int period, BigDecimal k) {
+			super((period <= 0 ? DEFAULT_PERIOD : period), false);
+			this.maCalculator = MA.buildCalculator(period <= 0 ? DEFAULT_PERIOD : period);
+			this.k = (k == null || k.longValue() <= 0) ? DEFAULT_K : k;
 		}
 
 		@Override
@@ -94,7 +100,7 @@ public class BOLL extends Indicator {
 			// 1）计算MA: MA=N日内的收盘价之和÷N
 
 			// 收盘价 平均值
-			MA MA = maCalculator.execute(new IndicatorCalculatorCallback<MA>(head));
+			MA MA = maCalculator.input(new IndicatorCalculatorCallback<MA>(head));
 			// BOLL线
 			if (!isFullCapacity()) {
 				return null;
@@ -104,7 +110,7 @@ public class BOLL extends Indicator {
 			// 2）计算标准差MD MD=平方根（N-1）日的（C－MA）的两次方之和除以N
 			// 2.1 计算方差
 			BigDecimal varianceS2 = BigDecimal.ZERO;
-			for (IndicatorCalculatorCallback<BOLL> m : super.getCalculatorListData()) {
+			for (IndicatorCalculatorCallback<BOLL> m : super.getCalculatorDataList()) {
 				// 差值
 				BigDecimal DValue = m.getClose().subtract(MA.getValue());
 				// 差值的平方只和

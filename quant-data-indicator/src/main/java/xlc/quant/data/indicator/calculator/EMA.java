@@ -47,16 +47,19 @@ public class EMA extends Indicator {
 	 * @author Rootfive
 	 */
 	private static class EMACalculator extends IndicatorCalculator<EMA> {
-
+		/** 正整数：2 */
+		private static final BigDecimal INT_2 = new BigDecimal(2);
+		//常量 XXX==========分隔符号
+		
 		/** 平滑系数的分子。 α为平滑系数，设定值为（2/n+1); */
 		private final BigDecimal α;
 
 		/**
-		 * @param capacity
+		 * @param period
 		 */
-		public EMACalculator(int capacity) {
-			super(capacity, false);
-			this.α = divide(INT_2, new BigDecimal(capacity + 1), 4);
+		public EMACalculator(int period) {
+			super(period, false);
+			this.α = divide(INT_2, new BigDecimal(period + 1), 4);
 		}
 
 		@Override
@@ -70,7 +73,8 @@ public class EMA extends Indicator {
 				 * 由于第一个EMA1是没有定义的。EMA1的取值有几种不同的方法，
 				 * 通常情况下取EMA1为Price1，另外有的技术是将EMA1取值为开头4到5个数值的均值。 我们这里取前，中价格，中价等于最高价、最低价和收盘价之和除以3
 				 */
-				emaValue = divide((head.getHigh().add(head.getLow()).add(head.getClose())),INT_3, 8);
+//				emaValue = divide((head.getHigh().add(head.getLow()).add(head.getClose())),INT_3, 8);
+				emaValue = average(8,head.getHigh(),head.getLow(),head.getClose());
 			} else {
 				// 当前使用价格
 				BigDecimal headClose = head.getClose();
