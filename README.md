@@ -308,8 +308,8 @@ public class MA extends Indicator {
 
 ### Maven直接引用
 
-Maven地址2（更新较慢）：https://mvnrepository.com/artifact/com.xianlaocai.quant/quant-data-indicator
-Maven地址2（更新较慢）：https://mvnrepository.com/artifact/com.xianlaocai.quant/quant-data-indicator
+Maven地址（更新较快）阿里云Maven仓库搜索关键词：quant-data-indicator， 阿里云Maven仓库地址：https://developer.aliyun.com/mvn/search
+Maven地址（更新较慢）：https://mvnrepository.com/artifact/com.xianlaocai.quant/quant-data-indicator
 
 1.  IDE: Ecplse或者IDEA均可
 

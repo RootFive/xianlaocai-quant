@@ -89,7 +89,8 @@
 			<dependency>
 				<groupId>com.xianlaocai.quant</groupId>
 				<artifactId>quant-data-indicator</artifactId>
-				<version>${xianlaocai-quant.version}</version>
+				<!--<version>${xianlaocai-quant.version}</version>-->
+				<version>XLCQ20230910</version>
 			</dependency>
 
 			<!-- lombok支持 -->
