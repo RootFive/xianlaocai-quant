@@ -327,7 +327,7 @@ Gradle
 
 ```xml
 // https://mvnrepository.com/artifact/com.xianlaocai.quant/quant-data-indicator
-implementation group: 'com.xianlaocai.quant', name: 'quant-data-indicator', version: 'XLCQ20230907'
+implementation group: 'com.xianlaocai.quant', name: 'quant-data-indicator', version: 'XLCQ20230910'
 
 ```
 
