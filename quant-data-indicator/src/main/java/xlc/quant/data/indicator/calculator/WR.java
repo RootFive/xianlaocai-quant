@@ -81,7 +81,13 @@ public class WR extends Indicator {
 			minLow = super.getCalculatorDataList().stream().min(Comparator.comparing(IndicatorCalculatorCallback::getLow))
 					.get().getLow();
 			// 计算公式：W%R=（Hn—C）÷（Hn—Ln）×100其中
-			BigDecimal wrValue = divideByPct(maxHigh.subtract(headClose), maxHigh.subtract(minLow));
+			BigDecimal wrValue = null;
+			if (maxHigh.compareTo(minLow) == 0) {
+				//连续横盘的极端情况maxHigh=minLow
+				wrValue = BigDecimal.ZERO;
+			}else {
+				wrValue = divideByPct(maxHigh.subtract(headClose), maxHigh.subtract(minLow));
+			}
 			return new WR(wrValue);
 		}
 

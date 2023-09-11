@@ -319,7 +319,7 @@ Maven地址（更新较慢）：https://mvnrepository.com/artifact/com.xianlaoca
 	<dependency>
 		<groupId>com.xianlaocai.quant</groupId>
 		<artifactId>quant-data-indicator</artifactId>
-		<version>XLCQ20230910</version>
+		<version>XLCQ20230911</version>
 	</dependency>
 ```
 
@@ -327,7 +327,7 @@ Gradle
 
 ```xml
 // https://mvnrepository.com/artifact/com.xianlaocai.quant/quant-data-indicator
-implementation group: 'com.xianlaocai.quant', name: 'quant-data-indicator', version: 'XLCQ20230910'
+implementation group: 'com.xianlaocai.quant', name: 'quant-data-indicator', version: 'XLCQ20230911'
 
 ```
 

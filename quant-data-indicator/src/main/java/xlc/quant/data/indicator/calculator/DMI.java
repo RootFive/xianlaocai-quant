@@ -135,8 +135,16 @@ public class DMI extends Indicator {
 			BigDecimal dmmSum = super.getCalculatorDataList().stream().map(IndicatorCalculatorCallback::getIndicator)
 					.map(DMI::getDmm).reduce(BigDecimal.ZERO, BigDecimal::add);
 
-			BigDecimal dip = divideByPct(dmpSum, trSum);
-			BigDecimal dim = divideByPct(dmmSum, trSum);
+			BigDecimal dip = null;
+			BigDecimal dim = null;
+			if (BigDecimal.ZERO.compareTo(trSum) == 0) {
+				//连续横盘的极端情况
+				dip = BigDecimal.ZERO;
+				dim = BigDecimal.ZERO;
+			}else {
+				dip = divideByPct(dmpSum, trSum);
+				dim = divideByPct(dmmSum, trSum);
+			}
 			dmi.setDip(dip);
 			dmi.setDim(dim);
 

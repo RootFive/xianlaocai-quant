@@ -71,7 +71,7 @@ public class BIAS extends Indicator {
 				BigDecimal sumValue = super.getCalculatorDataList().stream().map(IndicatorCalculatorCallback::getClose).reduce(BigDecimal::add).get();
 				ma = divide(sumValue, fwcPeriod, 2);
 			}
-
+			
 			// 计算公式：BIAS 乖离率=（当日收盘价-N日内移动平均价）/N日内移动平均价╳100%
 			BigDecimal biasValue = divideByPct(currentUsePrice.subtract(ma), ma);
 			return new BIAS(biasValue);

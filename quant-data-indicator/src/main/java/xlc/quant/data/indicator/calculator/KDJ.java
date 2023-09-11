@@ -119,8 +119,13 @@ public class KDJ extends Indicator {
 
 			// 计算公式为：n日RSV=（Cn－Ln）÷（Hn－Ln）×100,四舍五入，保留4位小数
 //			BigDecimal rsvValue = (valueCn.subtract(valueLn)).divide((valueHn.subtract(valueLn)), 4, RoundingMode.HALF_UP).multiply(HUNDRED);
-			
-			BigDecimal rsvValue = divideByPct((valueCn.subtract(valueLn)),(valueHn.subtract(valueLn)));
+			BigDecimal rsvValue =null;
+			if (valueHn.compareTo(valueLn) == 0) {
+				//连续横盘的极端情况valueHn=valueLn
+				rsvValue=BigDecimal.ZERO;
+			}else {
+				rsvValue = divideByPct((valueCn.subtract(valueLn)),(valueHn.subtract(valueLn)));
+			}
 					
 			/**
 			 * 计算K值: 当日K值=2/3×前一日K值＋1/3×当日RSV 计算D值： 当日D值=2/3×前一日D值＋1/3×当日K值 计算J值：
