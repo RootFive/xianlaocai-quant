@@ -1,13 +1,12 @@
 package xlc.quant.data.indicator.calculator;
 
-import java.math.BigDecimal;
-
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import xlc.quant.data.indicator.Indicator;
 import xlc.quant.data.indicator.IndicatorCalculator;
 import xlc.quant.data.indicator.IndicatorCalculatorCallback;
+import xlc.quant.data.indicator.util.DoubleUtils;
 
 /**
  * 顺势指标CCI也包括日CCI指标、周CCI指标、年CCI指标以及分钟CCI指标等很多种类型。
@@ -34,17 +33,17 @@ import xlc.quant.data.indicator.IndicatorCalculatorCallback;
 public class CCI extends Indicator {
 
 	/** TP=（最高价+最低价+收盘价）÷3 */
-	private BigDecimal tp;
+	private Double tp;
 
 	/** CCI值 */
-	private BigDecimal value;
+	private Double value;
 
-	public CCI(BigDecimal tp) {
+	public CCI(Double tp) {
 		super();
 		this.tp = tp;
 	}
 
-	public CCI(BigDecimal tp, BigDecimal value) {
+	public CCI(Double tp, Double value) {
 		super();
 		this.tp = tp;
 		this.value = value;
@@ -71,7 +70,7 @@ public class CCI extends Indicator {
 		 * 偏离系数（Multiplier）：CCI指标的计算中，常用的偏离系数为0.015。
 		 * 该系数用于调整CCI指标的灵敏度，可以根据需要进行微调。 
 		 */
-		private static final BigDecimal multiplier = new BigDecimal("0.015");
+		private static final Double multiplier = 0.015D;
 
 		/**
 		 * @param capacity
@@ -84,34 +83,28 @@ public class CCI extends Indicator {
 		protected CCI executeCalculate() {
 			IndicatorCalculatorCallback<CCI> head = getHead();
 //			BigDecimal TP = divide((head.getHigh().add(head.getLow()).add(head.getClose())),INT_3, 4);
-			BigDecimal TP = average(4,head.getHigh(),head.getLow(),head.getClose());
+			Double TP = DoubleUtils.mean(4,head.getHigh(),head.getLow(),head.getClose());
 			if (!isFullCapacity()) {
 				return new CCI(TP);
 			}
-			BigDecimal tpSumValueForMD = TP;
+			Double tpSumValueForMD = TP;
 			for (IndicatorCalculatorCallback<CCI> indicatorCarrier : super.getCalculatorDataList()) {
 				CCI cci = indicatorCarrier.getIndicator();
 				if (cci !=null) {
-					tpSumValueForMD = tpSumValueForMD.add(cci.getTp());
+					tpSumValueForMD = tpSumValueForMD + cci.getTp();
 				}
 			}
 					
-			BigDecimal MA = divide(tpSumValueForMD, fwcPeriod, 4);
-			BigDecimal sumValueForMD = BigDecimal.ZERO;
+			Double MA = DoubleUtils.divide(tpSumValueForMD, fwcPeriod, 4);
+			Double sumValueForMD = DoubleUtils.ZERO;
 			for (IndicatorCalculatorCallback<CCI> calculator : super.getCalculatorDataList()) {
 
 				CCI cci = calculator.getIndicator();
-				BigDecimal tp = cci !=null ?cci.getTp():TP;
-				BigDecimal subtract = MA.subtract(tp);
-				
-				if (subtract.compareTo(BigDecimal.ZERO) < 0) {
-					sumValueForMD = sumValueForMD.add(subtract.abs());
-				} else {
-					sumValueForMD = sumValueForMD.add(subtract);
-				}
+				Double tp = cci !=null ?cci.getTp():TP;
+				sumValueForMD = sumValueForMD + Math.abs(MA -tp);
 			}
-			BigDecimal MD = divide(sumValueForMD, fwcPeriod, 4);
-			BigDecimal cciValue = divide(divide(TP.subtract(MA), MD, 4), multiplier, 4);
+			Double MD = DoubleUtils.divide(sumValueForMD, fwcPeriod, 4);
+			Double cciValue = DoubleUtils.divide(DoubleUtils.divide(TP-MA, MD, 4), multiplier, 2);
 			return new CCI(TP, cciValue);
 		}
 

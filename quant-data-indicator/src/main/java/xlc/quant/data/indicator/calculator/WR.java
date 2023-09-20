@@ -1,6 +1,5 @@
 package xlc.quant.data.indicator.calculator;
 
-import java.math.BigDecimal;
 import java.util.Comparator;
 
 import lombok.AllArgsConstructor;
@@ -10,6 +9,7 @@ import lombok.NoArgsConstructor;
 import xlc.quant.data.indicator.Indicator;
 import xlc.quant.data.indicator.IndicatorCalculator;
 import xlc.quant.data.indicator.IndicatorCalculatorCallback;
+import xlc.quant.data.indicator.util.DoubleUtils;
 
 /**
  * 威廉指标
@@ -40,7 +40,7 @@ import xlc.quant.data.indicator.IndicatorCalculatorCallback;
 @EqualsAndHashCode(callSuper = true)
 public class WR extends Indicator {
 
-	private BigDecimal value;
+	private Double value;
 
 	
 	//=============
@@ -72,21 +72,21 @@ public class WR extends Indicator {
 		protected WR executeCalculate() {
 			IndicatorCalculatorCallback<WR> head = getHead();
 
-			BigDecimal headClose = head.getClose();
-			BigDecimal maxHigh = null;
-			BigDecimal minLow = null;
+			Double headClose = head.getClose();
+			Double maxHigh = null;
+			Double minLow = null;
 
 			maxHigh = super.getCalculatorDataList().stream().max(Comparator.comparing(IndicatorCalculatorCallback::getHigh))
 					.get().getHigh();
 			minLow = super.getCalculatorDataList().stream().min(Comparator.comparing(IndicatorCalculatorCallback::getLow))
 					.get().getLow();
 			// 计算公式：W%R=（Hn—C）÷（Hn—Ln）×100其中
-			BigDecimal wrValue = null;
+			Double wrValue = null;
 			if (maxHigh.compareTo(minLow) == 0) {
 				//连续横盘的极端情况maxHigh=minLow
-				wrValue = BigDecimal.ZERO;
+				wrValue = DoubleUtils.ZERO;
 			}else {
-				wrValue = divideByPct(maxHigh.subtract(headClose), maxHigh.subtract(minLow));
+				wrValue = DoubleUtils.divideByPct(maxHigh-headClose, maxHigh-minLow);
 			}
 			return new WR(wrValue);
 		}

@@ -1,6 +1,5 @@
 package xlc.quant.data.indicator.test;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -48,7 +47,7 @@ public class DemoTest {
 		//MACD-计算器
 		IndicatorCalculator<MACD> macdCalculator = MACD.buildCalculator(12, 26, 9);
 		//BOLL-计算器
-		IndicatorCalculator<BOLL> bollCalculator = BOLL.buildCalculator(20, BigDecimal.valueOf(2));
+		IndicatorCalculator<BOLL> bollCalculator = BOLL.buildCalculator(20, 2);
 
 		//TOPMV-计算器
 		IndicatorCalculator<TOPMV> topmvCalculator20_3 = TOPMV.buildCalculator(20, 3);
@@ -200,7 +199,7 @@ public class DemoTest {
 					.map(BIAS::getValue).orElse(null));
 
 			//CCI-计算
-			BigDecimal cci14 = cci14Calculator.input(createIndicatorCarrier(CCI.class, daily)).getValue();
+			Double cci14 = cci14Calculator.input(createIndicatorCarrier(CCI.class, daily)).getValue();
 			indicatorDomain.setCci14(cci14);
 
 			//WR-计算

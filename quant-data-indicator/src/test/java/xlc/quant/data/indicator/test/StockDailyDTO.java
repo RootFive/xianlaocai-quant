@@ -3,7 +3,6 @@
  */
 package xlc.quant.data.indicator.test;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import lombok.Data;
@@ -38,80 +37,80 @@ public class StockDailyDTO  {
 	private String stockCode;
 
 	/** 开盘价(元) */
-	private BigDecimal open;
+	private Double open;
 
 	/** 最高价(元) */
-	private BigDecimal high;
+	private Double high;
 
 	/** 最低价(元) */
-	private BigDecimal low;
+	private Double low;
 
 	/** 收盘价(元) */
-	private BigDecimal close;
+	private Double close;
 
 	/** 成交量(股/份) */
-	private BigDecimal volume;
+	private Double volume;
 
 	/** 成交额(元) */
-	private BigDecimal amount;
+	private Double amount;
 
 	//=======================
 	//上面的属性，分时和日行情一定会有
 	//=======================
 	/** 前收 前复权(未复权，元)  */
-	private BigDecimal preClose;
+	private Double preClose;
 
 	/** 前收 涨跌额(未复权，元)  */
-	private BigDecimal priceChange;
+	private Double priceChange;
 
 	/** 涨跌幅（未复权，%） */
-	private BigDecimal pctChange;
+	private Double pctChange;
 
 	/** 价格震幅（未复权，%） */
-	private BigDecimal amplitude;
+	private Double amplitude;
 
 	/** 成交均价(元) */
-	private BigDecimal avgPrice;
+	private Double avgPrice;
 
 	//涨跌、复权信息= XXX
 	/** 涨停(基于前复权前收，元) */
-	private BigDecimal upLimit;
+	private Double upLimit;
 
 	/** 跌停(基于前复权前收，元) */
-	private BigDecimal downLimit;
+	private Double downLimit;
 
 	/** 换手率（%） */
-	private BigDecimal turnoverRate;
+	private Double turnoverRate;
 
 	/** 量比（%） */
-	private BigDecimal volumeRatio;
+	private Double volumeRatio;
 
 	/** 总股本 （股） */
-	private BigDecimal totalShare;
+	private Double totalShare;
 
 	/** 流通股本（股） */
-	private BigDecimal floatShare;
+	private Double floatShare;
 
 	/** 总市值 （元） */
-	private BigDecimal totalMv;
+	private Double totalMv;
 
 	/** 流通市值 （元） */
-	private BigDecimal circMv;
+	private Double circMv;
 
 	/** 外（买）盘(股) */
-	private BigDecimal buyVolume;
+	private Double buyVolume;
 
 	/** 内（卖）盘(股) */
-	private BigDecimal sellVolume;
+	private Double sellVolume;
 
 	/** 强弱度(%) */
-	private BigDecimal strength;
+	private Double strength;
 
 	/** 活跃度(%) */
-	private BigDecimal activity;
+	private Double activity;
 
 	/** 复权因子 */
-	private BigDecimal adjFactor;
+	private Double adjFactor;
 
 
 	//复权 信息= XXX

@@ -1,14 +1,12 @@
 package xlc.quant.data.indicator.calculator;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import xlc.quant.data.indicator.Indicator;
 import xlc.quant.data.indicator.IndicatorCalculator;
 import xlc.quant.data.indicator.IndicatorCalculatorCallback;
+import xlc.quant.data.indicator.util.DoubleUtils;
 
 /**
  * 
@@ -21,25 +19,24 @@ import xlc.quant.data.indicator.IndicatorCalculatorCallback;
 public class MACD extends Indicator {
 
 	/** MACD_快 */
-	private BigDecimal fastEma;
+	private Double fastEma;
 
 	/** MACD_慢 */
-	private BigDecimal slowEma;
+	private Double slowEma;
 
 	/** MACD_DIF */
-	private BigDecimal dif;
+	private Double dif;
 
 	/** MACD_DEA */
-	private BigDecimal dea;
+	private Double dea;
 
 	/** MACD值 */
-	private BigDecimal macdValue;
+	private Double macdValue;
 
 	/** MACD连续上涨 */
-	private Integer continueRise;
+	private int continueRise;
 
-	public MACD(BigDecimal fastEma, BigDecimal slowEma, BigDecimal dif, BigDecimal dea, BigDecimal macdValue,
-			Integer continueRise) {
+	public MACD(Double fastEma, Double slowEma, Double dif, Double dea, Double macdValue, int continueRise) {
 		super();
 		this.fastEma = fastEma;
 		this.slowEma = slowEma;
@@ -62,28 +59,23 @@ public class MACD extends Indicator {
 	public static IndicatorCalculator<MACD> buildCalculator(int fastCycle, int slowCycle, int difCycle) {
 		return new MACDCalculator(fastCycle, slowCycle, difCycle);
 	}
-	
+
 	/**
 	 * 计算器
 	 * @author Rootfive
 	 */
 	private static class MACDCalculator extends IndicatorCalculator<MACD> {
-		/** 正整数：2 */
-		private static final BigDecimal INT_2 = new BigDecimal(2);
-		//常量 XXX==========分隔符号
-		
-		
+
 		private final IndicatorCalculator<EMA> fastEMAFactor;
 		private final IndicatorCalculator<EMA> slowEMAFactor;
 
-		private final BigDecimal dividend = INT_2;
-		private final BigDecimal difDivisor;
+		private final int difDivisor;
 
 		MACDCalculator(int fastCycle, int slowCycle, int difCycle) {
 			super(slowCycle, false);
 			this.fastEMAFactor = EMA.buildCalculator(fastCycle);
 			this.slowEMAFactor = EMA.buildCalculator(slowCycle);
-			this.difDivisor = new BigDecimal(difCycle + 1);
+			this.difDivisor = difCycle + 1;
 		}
 
 		@Override
@@ -91,11 +83,11 @@ public class MACD extends Indicator {
 			IndicatorCalculatorCallback<MACD> current = getHead();
 
 			// 快线EMA
-			BigDecimal fastEma = fastEMAFactor.input(new IndicatorCalculatorCallback<EMA>(current)).getValue();
+			Double fastEma = fastEMAFactor.input(new IndicatorCalculatorCallback<EMA>(current)).getValue();
 			// 慢线EMA
-			BigDecimal slowEma = slowEMAFactor.input(new IndicatorCalculatorCallback<EMA>(current)).getValue();
+			Double slowEma = slowEMAFactor.input(new IndicatorCalculatorCallback<EMA>(current)).getValue();
 			// 计算离差值(DIF)
-			BigDecimal dif = fastEma.subtract(slowEma);
+			Double dif = DoubleUtils.setScale(fastEma - slowEma, 2);
 
 			// 前一个计算指数
 			MACD prevMacd = null;
@@ -104,15 +96,16 @@ public class MACD extends Indicator {
 				prevMacd = prev.getIndicator();
 			}
 			// 计算DIF的9日EMA
-			BigDecimal dea = null;
+			Double dea = null;
 			if (prevMacd == null) {
 				dea = dif;
 			} else {
-				dea = getEma(dif, prevMacd, difDivisor);
+				dea = DoubleUtils.setScale(getEma(dif, prevMacd, difDivisor), 2);
 			}
 
 			/** MACD称为异同移动平均线:表达式MACD=2×（DIF-DEA） */
-			BigDecimal macdValue = INT_2.multiply(dif.subtract(dea)).setScale(2, RoundingMode.HALF_UP);
+			Double macdValue = DoubleUtils.setScale(2 * (dif-dea), 2);
+			
 
 			MACD macd = null;
 			if (prevMacd == null) {
@@ -132,9 +125,8 @@ public class MACD extends Indicator {
 		 * @param divisor
 		 * @return
 		 */
-		private BigDecimal getEma(BigDecimal currentUse, MACD prevMacd, BigDecimal divisor) {
-			return dividend.multiply(currentUse.subtract(prevMacd.getDea())).divide(divisor, 2, RoundingMode.HALF_UP).add(prevMacd.getDea());
-					
+		private Double getEma(Double currentUse, MACD prevMacd, double divisor) {
+			return DoubleUtils.divide(2 * (currentUse - prevMacd.getDea()), divisor, 2) + prevMacd.getDea();
 		}
 	}
 

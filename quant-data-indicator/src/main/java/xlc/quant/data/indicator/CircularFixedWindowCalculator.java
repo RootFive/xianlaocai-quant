@@ -1,6 +1,5 @@
 package xlc.quant.data.indicator;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -20,7 +19,7 @@ public abstract class CircularFixedWindowCalculator<T, FWC extends CircularFixed
 	protected final transient Object [] circularData;
 
 	/** 环形数组最大长度，[固定窗口环形数组]时间周期 */
-	protected final transient BigDecimal fwcPeriod;
+	protected final transient int fwcPeriod;
 
 	/** 执行总数 */
 	protected int executeTotal = 0;
@@ -39,7 +38,7 @@ public abstract class CircularFixedWindowCalculator<T, FWC extends CircularFixed
 	public CircularFixedWindowCalculator(int fwcMax, boolean isFullCapacityCalculate) {
 		super();
 		this.circularData =  new Object [fwcMax];
-		this.fwcPeriod = new BigDecimal(fwcMax);
+		this.fwcPeriod = fwcMax;
 		this.isFullCapacityCalculate = isFullCapacityCalculate;
 	}
 

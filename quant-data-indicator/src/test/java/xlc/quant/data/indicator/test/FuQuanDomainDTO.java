@@ -3,8 +3,6 @@
  */
 package xlc.quant.data.indicator.test;
 
-import java.math.BigDecimal;
-
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -18,20 +16,20 @@ public class FuQuanDomainDTO {
 	
 
     /** 开盘价(元) */
-    private BigDecimal open;
+    private Double open;
 
     /** 最高价(元) */
-    private BigDecimal high;
+    private Double high;
 
     /** 最低价(元) */
-    private BigDecimal low;
+    private Double low;
     /** 收盘价(元) */
-    private BigDecimal close;
+    private Double close;
     
     /** 前收价(元) */
-    private BigDecimal preClose;
+    private Double preClose;
 
     /** 涨跌额,价格变动(元) */
-    private BigDecimal priceChange;
+    private Double priceChange;
 	
 }

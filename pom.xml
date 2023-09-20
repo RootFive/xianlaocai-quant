@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.xianlaocai.quant</groupId>
 	<artifactId>xianlaocai-quant</artifactId>
-	<version>XLCQ20230911</version>
+	<version>XLCQ20230920</version>
 	<packaging>pom</packaging>
 	<name>xianlaocai-quant</name>
 	<description>
@@ -34,7 +34,7 @@
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
 
-		<xianlaocai-quant.version>XLCQ20230911</xianlaocai-quant.version>
+		<xianlaocai-quant.version>XLCQ20230920</xianlaocai-quant.version>
 
 		<!-- maven构建依赖 -->
 		<!--<maven-jar-plugin.version>3.3.0</maven-jar-plugin.version>
@@ -48,8 +48,8 @@
 		<skipTests>true</skipTests>
 		<nexus-staging-maven-plugin.version>1.6.13</nexus-staging-maven-plugin.version>
 		<server.id.value>oss</server.id.value>
-		
-		
+
+
 	</properties>
 
 	<!--开源协议-->
@@ -90,7 +90,7 @@
 				<groupId>com.xianlaocai.quant</groupId>
 				<artifactId>quant-data-indicator</artifactId>
 				<!--<version>${xianlaocai-quant.version}</version>-->
-				<version>XLCQ20230911</version>
+				<version>XLCQ20230920</version>
 			</dependency>
 
 			<!-- lombok支持 -->
@@ -99,32 +99,45 @@
 				<artifactId>lombok</artifactId>
 				<version>1.18.24</version>
 			</dependency>
-			
+
 			<!-- Google Guava -->
 			<dependency>
 				<groupId>com.google.guava</groupId>
 				<artifactId>guava</artifactId>
 				<version>32.1.2-jre</version>
 			</dependency>
-			
+
+			<!-- Apache math3 -->
+			<dependency>
+				<groupId>org.apache.commons</groupId>
+				<artifactId>commons-math3</artifactId>
+				<version>3.6.1</version>
+			</dependency>
+
+			<!-- lang3 最新的包 -->
+			<dependency>
+				<groupId>org.apache.commons</groupId>
+				<artifactId>commons-lang3</artifactId>
+				<version>3.13.0</version><!--$NO-MVN-MAN-VER$-->
+			</dependency>
 
 		</dependencies>
 	</dependencyManagement>
 
 	<build>
 		<plugins>
-            <!--用于与 Sonatype Nexus 仓库进行集成，方便在 Maven 构建过程中进行部署和发布操作-->
-            <plugin>
-                <groupId>org.sonatype.plugins</groupId>
-                <artifactId>nexus-staging-maven-plugin</artifactId>
-                <version>${nexus-staging-maven-plugin.version}</version>
-                <extensions>true</extensions>
-                <configuration>
-                    <serverId>${server.id.value}</serverId>
-                    <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
-                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
-                </configuration>
-            </plugin>
+			<!--用于与 Sonatype Nexus 仓库进行集成，方便在 Maven 构建过程中进行部署和发布操作-->
+			<plugin>
+				<groupId>org.sonatype.plugins</groupId>
+				<artifactId>nexus-staging-maven-plugin</artifactId>
+				<version>${nexus-staging-maven-plugin.version}</version>
+				<extensions>true</extensions>
+				<configuration>
+					<serverId>${server.id.value}</serverId>
+					<nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
+					<autoReleaseAfterClose>true</autoReleaseAfterClose>
+				</configuration>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>
@@ -141,7 +154,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				 <version>3.5.0</version>
+				<version>3.5.0</version>
 				<configuration>
 					<additionalJOptions>
 						<additionalJOption>-Xdoclint:none</additionalJOption>

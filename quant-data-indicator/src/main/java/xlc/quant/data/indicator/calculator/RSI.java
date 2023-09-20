@@ -1,14 +1,12 @@
 package xlc.quant.data.indicator.calculator;
 
-import java.math.BigDecimal;
-
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import xlc.quant.data.indicator.Indicator;
 import xlc.quant.data.indicator.IndicatorCalculator;
 import xlc.quant.data.indicator.IndicatorCalculatorCallback;
-
+import xlc.quant.data.indicator.util.DoubleUtils;
 
 /**
  * @author Rootfive
@@ -39,13 +37,13 @@ import xlc.quant.data.indicator.IndicatorCalculatorCallback;
 public class RSI extends Indicator {
 
 	/** RSI值 */
-	private BigDecimal value;
+	private Double value;
 
-	private BigDecimal emaUp;
+	private Double emaUp;
 
-	private BigDecimal emaDown;
+	private Double emaDown;
 
-	public RSI(BigDecimal value, BigDecimal emaUp, BigDecimal emaDown) {
+	public RSI(Double value, Double emaUp, Double emaDown) {
 		super();
 		this.value = value;
 		this.emaUp = emaUp;
@@ -71,79 +69,77 @@ public class RSI extends Indicator {
 	 */
 	private static class RSICalculator extends IndicatorCalculator<RSI> {
 
-		private final BigDecimal α;
-		private final BigDecimal β;
+		private final double α;
+		private final double β;
 
 		/**
 		 * @param capacity
 		 */
 		public RSICalculator(int capacity) {
 			super(capacity, true);
-			this.α = divide(new BigDecimal(capacity - 1), new BigDecimal(capacity), 4);
-			this.β = BigDecimal.ONE.subtract(α);
+			this.α = DoubleUtils.divide(capacity - 1, capacity, 8);
+			this.β = 1 - α;
 		}
 
 		@Override
 		protected RSI executeCalculate() {
 
-			BigDecimal emaUp = null;
-			BigDecimal emaDown = null;
+			Double emaUp = null;
+			Double emaDown = null;
 
 			RSI prevRSI = getPrev().getIndicator();
 			if (prevRSI == null) {
 				// 涨额之和
-				BigDecimal sumUp = BigDecimal.ZERO;
+				Double sumUp = DoubleUtils.ZERO;
 				// 跌额之和
-				BigDecimal sumDown = BigDecimal.ZERO;
+				Double sumDown = DoubleUtils.ZERO;
 				for (IndicatorCalculatorCallback<RSI> calculate : super.getCalculatorDataList()) {
-					BigDecimal changePrice = calculate.getPriceChange();
+					Double changePrice = calculate.getPriceChange();
 					if (changePrice == null) {
 						// 第一根K线可能没有统计到涨跌幅，跳过
 						continue;
 					}
 
 					// 涨幅之和累加
-					
-					if (changePrice.compareTo(BigDecimal.ZERO) > 0) {
-						sumUp = sumUp.add(changePrice);
-					} else if (changePrice.compareTo(BigDecimal.ZERO) < 0) {
-						sumDown = sumDown.subtract(changePrice);
+					if (changePrice > DoubleUtils.ZERO) {
+						sumUp = sumUp + Math.abs(changePrice);
+					} else if (changePrice < DoubleUtils.ZERO) {
+						sumDown = sumDown + Math.abs(changePrice);
 					}
 				}
 
-				emaUp = divide(sumUp, fwcPeriod, 4);
-				emaDown = divide(sumDown, fwcPeriod, 4);
-				;
+				emaUp = DoubleUtils.divide(sumUp, fwcPeriod, 4);
+				emaDown = DoubleUtils.divide(sumDown, fwcPeriod, 4);
 			} else {
-				BigDecimal prevEmaUp = prevRSI.getEmaUp();
-				BigDecimal prevEmaDown = prevRSI.getEmaDown();
+				Double prevEmaUp = prevRSI.getEmaUp();
+				Double prevEmaDown = prevRSI.getEmaDown();
 
 				IndicatorCalculatorCallback<RSI> head = getHead();
-				BigDecimal changePrice = head.getPriceChange();
+				Double changePrice = head.getPriceChange();
 
 				// 涨幅之和累加
-				int compareTo = changePrice.compareTo(BigDecimal.ZERO);
+				int compareTo = changePrice.compareTo(DoubleUtils.ZERO);
 				if (compareTo > 0) {
-					emaUp = (prevEmaUp.multiply(α)).add((changePrice.multiply(β)));
-					emaDown = (prevEmaDown.multiply(α)).add((BigDecimal.ZERO.multiply(β)));
+					emaUp = prevEmaUp * α + changePrice * β;
+					emaDown = prevEmaDown * α + DoubleUtils.ZERO * β;
 				}
 
 				if (compareTo < 0) {
-					emaUp = (prevEmaUp.multiply(α)).add((BigDecimal.ZERO.multiply(β)));
-					emaDown = (prevEmaDown.multiply(α)).add((changePrice.abs().multiply(β)));
+					emaUp = prevEmaUp * α + DoubleUtils.ZERO * β;
+					emaDown = prevEmaDown * α + Math.abs(changePrice) * β;
 				}
 
 				if (compareTo == 0) {
-					emaUp = (prevEmaUp.multiply(α)).add((BigDecimal.ZERO.multiply(β)));
-					emaDown = (prevEmaDown.multiply(α)).add((BigDecimal.ZERO.multiply(β)));
+					emaUp = prevEmaUp * α + DoubleUtils.ZERO * β;
+					emaDown = prevEmaDown * α + DoubleUtils.ZERO * β;
 				}
 			}
 
-			BigDecimal sumEmaChanges = emaUp.add(emaDown);
-			BigDecimal rsi = null;
-			
-			if (sumEmaChanges.compareTo(BigDecimal.ZERO) !=0) {
-				rsi = divideByPct(emaUp, sumEmaChanges);
+			Double sumEmaChanges = emaUp + emaDown;
+			Double rsi = null;
+
+			if (sumEmaChanges.compareTo(DoubleUtils.ZERO) != 0) {
+				rsi = DoubleUtils.divideByPct(emaUp, sumEmaChanges);
 			}
 			return new RSI(rsi, emaUp, emaDown);
 		}

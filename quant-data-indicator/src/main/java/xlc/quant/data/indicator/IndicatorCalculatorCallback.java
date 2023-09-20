@@ -1,6 +1,5 @@
 package xlc.quant.data.indicator;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import lombok.Data;
@@ -32,38 +31,38 @@ public  class IndicatorCalculatorCallback<T extends Indicator> implements Circul
 	protected LocalDateTime tradeDateTime;
 
 	/** 收盘价(元) */
-	protected BigDecimal close;
+	protected double close;
 
 	/** 开盘价(元) */
-	protected BigDecimal open;
+	protected double open;
 
 	/** 最高价(元) */
-	protected BigDecimal high;
+	protected double high;
 
 	/** 最低价(元) */
-	protected BigDecimal low;
+	protected double low;
 
 	/** 成交量(股/份/个) */
-	protected BigDecimal volume;
+	protected double volume;
 
 	/** 成交额(元) */
-	protected BigDecimal amount;
+	protected double amount;
 
 	// =======================
 	// 上面的属性值，一般情况下，分时和日行情都有
 	// 下面的属性值，一般情况下，分时和日行情可能有，即便是没有，也可以通过上面的属性计算得出
 	// =======================
 	/** 前收 (元) */
-	protected BigDecimal preClose;
+	protected Double preClose;
 
 	/** 前收 涨跌额(元) */
-	protected BigDecimal priceChange;
+	protected Double priceChange;
 
 	/** 涨跌幅（%） */
-	protected BigDecimal pctChange;
+	protected Double pctChange;
 
 	/** 价格震幅（%） */
-	protected BigDecimal amplitude;
+	protected Double amplitude;
 	
 	
 

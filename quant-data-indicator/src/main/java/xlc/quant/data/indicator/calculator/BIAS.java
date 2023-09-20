@@ -1,7 +1,5 @@
 package xlc.quant.data.indicator.calculator;
 
-import java.math.BigDecimal;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -9,6 +7,7 @@ import lombok.NoArgsConstructor;
 import xlc.quant.data.indicator.Indicator;
 import xlc.quant.data.indicator.IndicatorCalculator;
 import xlc.quant.data.indicator.IndicatorCalculatorCallback;
+import xlc.quant.data.indicator.util.DoubleUtils;
 
 /**
 * @author Rootfive
@@ -30,7 +29,7 @@ import xlc.quant.data.indicator.IndicatorCalculatorCallback;
 @EqualsAndHashCode(callSuper = true)
 public class BIAS extends Indicator {
 
-	private BigDecimal value;
+	private Double value;
 
 	//=============
 	//内部类分隔符 XXX
@@ -63,17 +62,17 @@ public class BIAS extends Indicator {
 		protected BIAS executeCalculate() {
 			IndicatorCalculatorCallback<BIAS> head = getHead();
 			// 当前使用价格
-			BigDecimal currentUsePrice = null;
+			Double currentUsePrice = null;
 			// 缓冲区内所有 平均值
-			BigDecimal ma = null;
+			Double ma = null;
 			if (isFullCapacity()) {
 				currentUsePrice = head.getClose();
-				BigDecimal sumValue = super.getCalculatorDataList().stream().map(IndicatorCalculatorCallback::getClose).reduce(BigDecimal::add).get();
-				ma = divide(sumValue, fwcPeriod, 2);
+				Double sumValue = super.getCalculatorDataList().stream().mapToDouble(IndicatorCalculatorCallback::getClose).sum();
+				ma = DoubleUtils.divide(sumValue, fwcPeriod, 2);
 			}
 			
 			// 计算公式：BIAS 乖离率=（当日收盘价-N日内移动平均价）/N日内移动平均价╳100%
-			BigDecimal biasValue = divideByPct(currentUsePrice.subtract(ma), ma);
+			Double biasValue = DoubleUtils.divideByPct(currentUsePrice-ma, ma);
 			return new BIAS(biasValue);
 		}
 	}

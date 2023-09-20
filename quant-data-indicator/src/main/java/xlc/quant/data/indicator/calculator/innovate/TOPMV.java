@@ -1,6 +1,5 @@
 package xlc.quant.data.indicator.calculator.innovate;
 
-import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -11,6 +10,7 @@ import lombok.NoArgsConstructor;
 import xlc.quant.data.indicator.Indicator;
 import xlc.quant.data.indicator.IndicatorCalculator;
 import xlc.quant.data.indicator.IndicatorCalculatorCallback;
+import xlc.quant.data.indicator.util.DoubleUtils;
 
 /**
  * @author Rootfive
@@ -21,16 +21,16 @@ import xlc.quant.data.indicator.IndicatorCalculatorCallback;
 public class TOPMV extends Indicator {
 
 	/** 成交额-最高值-前X个均值 */
-	private BigDecimal ath;
+	private Double ath;
 	/** 成交额-最低值-前X个均值 */
-	private BigDecimal atl;
+	private Double atl;
 
 	/** 成交量-最高值-前X个均值 */
-	private BigDecimal vth;
+	private Double vth;
 	/** 成交量-最低值-前X个均值 */
-	private BigDecimal vtl;
+	private Double vtl;
 
-	public TOPMV(BigDecimal ath, BigDecimal atl, BigDecimal vth, BigDecimal vtl) {
+	public TOPMV(double ath, double atl, double vth, double vtl) {
 		super();
 		this.ath = ath;
 		this.atl = atl;
@@ -57,7 +57,6 @@ public class TOPMV extends Indicator {
 	private static class TOPMVCalculator extends IndicatorCalculator<TOPMV> {
 
 		private final int top;
-		private final BigDecimal topValue;
 
 		/**
 		 * @param capacity
@@ -66,7 +65,6 @@ public class TOPMV extends Indicator {
 		TOPMVCalculator(int capacity, int top) {
 			super(capacity, true);
 			this.top = top;
-			this.topValue = new BigDecimal(top);
 		}
 
 		/**
@@ -75,30 +73,31 @@ public class TOPMV extends Indicator {
 		@Override
 		protected TOPMV executeCalculate() {
 			// 成交额-所有
-			List<BigDecimal> listAmount = super.getCalculatorDataList().stream().map(IndicatorCalculatorCallback::getAmount).collect(Collectors.toList());
+			List<Double> listAmount = super.getCalculatorDataList().stream().map(IndicatorCalculatorCallback::getAmount).collect(Collectors.toList());
 			// 倒叙
-			BigDecimal reverseOrderSumAmount = listAmount.stream().sorted(Comparator.reverseOrder()).limit(top).reduce(BigDecimal::add).get();
+			Double reverseOrderSumAmount = listAmount.stream().sorted(Comparator.reverseOrder()).limit(top).mapToDouble(Double::doubleValue).sum();
+	                
 			/** 成交额-最高值-前X个均值 */
-			BigDecimal ath = divide(reverseOrderSumAmount, topValue, 2);
+			Double ath = DoubleUtils. divide(reverseOrderSumAmount, top, 2);
 
 			// 正序
-			BigDecimal naturalOrderSumAmount = listAmount.stream().sorted(Comparator.naturalOrder()).limit(top).reduce(BigDecimal::add).get();
+			Double naturalOrderSumAmount = listAmount.stream().sorted(Comparator.naturalOrder()).limit(top).mapToDouble(Double::doubleValue).sum();
 			/** 成交额-最低值-前X个均值 */
-			BigDecimal atl = divide(naturalOrderSumAmount, topValue, 2);
+			Double atl = DoubleUtils.divide(naturalOrderSumAmount, top, 2);
 
 			// 成交量-所有
-			List<BigDecimal> listVolume = super.getCalculatorDataList().stream().map(IndicatorCalculatorCallback::getVolume).collect(Collectors.toList());
+			List<Double> listVolume = super.getCalculatorDataList().stream().map(IndicatorCalculatorCallback::getVolume).collect(Collectors.toList());
 
 					
 			// 倒叙
-			BigDecimal reverseOrderSumVolume = listVolume.stream().sorted(Comparator.reverseOrder()).limit(top).reduce(BigDecimal::add).get();
+			Double reverseOrderSumVolume = listVolume.stream().sorted(Comparator.reverseOrder()).limit(top).mapToDouble(Double::doubleValue).sum();
 			/** 成交量-最高值-前X个均值 */
-			BigDecimal vth = divide(reverseOrderSumVolume, topValue, 2);
+			Double vth = DoubleUtils.divide(reverseOrderSumVolume, top, 2);
 			// 正序
-			BigDecimal naturalOrderSumVolume = listVolume.stream().sorted(Comparator.naturalOrder()).limit(top).reduce(BigDecimal::add).get();
+			Double naturalOrderSumVolume = listVolume.stream().sorted(Comparator.naturalOrder()).limit(top).mapToDouble(Double::doubleValue).sum();
 					
 			/** 成交量-最低值-前X个均值 */
-			BigDecimal vtl = divide(naturalOrderSumVolume, topValue, 2);
+			Double vtl = DoubleUtils.divide(naturalOrderSumVolume, top, 2);
 			return new TOPMV(ath, atl, vth, vtl);
 		}
 

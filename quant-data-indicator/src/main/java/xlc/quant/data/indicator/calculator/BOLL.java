@@ -1,14 +1,12 @@
 package xlc.quant.data.indicator.calculator;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import xlc.quant.data.indicator.Indicator;
 import xlc.quant.data.indicator.IndicatorCalculator;
 import xlc.quant.data.indicator.IndicatorCalculatorCallback;
+import xlc.quant.data.indicator.util.DoubleUtils;
 
 /**
  * @author Rootfive 布林线指标
@@ -33,18 +31,18 @@ import xlc.quant.data.indicator.IndicatorCalculatorCallback;
 public class BOLL extends Indicator {
 
 	/** 上轨（Upper Band）：也称为上限线，表示价格的上限或压力区域。 */
-	private BigDecimal u;
+	private Double u;
 
 	/** 中轨（Middle Band）：也称为中线，表示价格的平均线或基准线。 */
-	private BigDecimal m;
+	private Double m;
 
 	/** 下轨（Lower Band）：也称为下限线，表示价格的下限或支撑区域。 */
-	private BigDecimal d;
+	private Double d;
 
 	/** BOLL连续扩大 */
 	private Integer continueExpand;
 
-	public BOLL(BigDecimal u, BigDecimal m, BigDecimal d, Integer continueExpand) {
+	public BOLL(Double u, Double m, Double d, Integer continueExpand) {
 		super();
 		this.u = u;
 		this.m = m;
@@ -61,7 +59,7 @@ public class BOLL extends Indicator {
 	 * @param k
 	 * @return
 	 */
-	public static IndicatorCalculator<BOLL> buildCalculator(int capacity, BigDecimal k) {
+	public static IndicatorCalculator<BOLL> buildCalculator(int capacity, double k) {
 		return new BOLLCalculator(capacity, k);
 	}
 
@@ -71,7 +69,7 @@ public class BOLL extends Indicator {
 	 */
 	private static class BOLLCalculator extends IndicatorCalculator<BOLL> {
 		/** K为参数，可根据股票的特性来做相应的调整，一般默认为2 */
-		private static final BigDecimal DEFAULT_K = new BigDecimal(2);
+		private static final double DEFAULT_K = 2;
 		/** 布林线指标的参数N,指的是K线的个数,默认20 */
 		private static final int DEFAULT_PERIOD = 20;
 		
@@ -80,7 +78,7 @@ public class BOLL extends Indicator {
 		private final IndicatorCalculator<MA> maCalculator;
 
 		/** K为参数，可根据股票的特性来做相应的调整，一般默认为2 */
-		private final BigDecimal k;
+		private final Double k;
 
 		/**
 		 * 各大股票交易软件默认N是20，所以MB等于当日20日均线值，（K为参数，可根据股票的特性来做相应的调整，一般默认为2）
@@ -88,10 +86,10 @@ public class BOLL extends Indicator {
 		 * @param period 布林线指标的参数N,指的是K线的个数,默认20
 		 * @param k        K为参数，可根据股票的特性来做相应的调整，一般默认为2
 		 */
-		BOLLCalculator(int period, BigDecimal k) {
+		BOLLCalculator(int period, double k) {
 			super((period <= 0 ? DEFAULT_PERIOD : period), false);
 			this.maCalculator = MA.buildCalculator(period <= 0 ? DEFAULT_PERIOD : period);
-			this.k = (k == null || k.longValue() <= 0) ? DEFAULT_K : k;
+			this.k =  k <= 0 ? DEFAULT_K : k;
 		}
 
 		@Override
@@ -105,38 +103,36 @@ public class BOLL extends Indicator {
 			if (!isFullCapacity()) {
 				return null;
 			}
-			BigDecimal maValue = MA.getValue();
+			Double maValue = MA.getValue();
 
 			// 2）计算标准差MD MD=平方根（N-1）日的（C－MA）的两次方之和除以N
 			// 2.1 计算方差
-			BigDecimal varianceS2 = BigDecimal.ZERO;
+			Double varianceS2 = DoubleUtils.ZERO;
 			for (IndicatorCalculatorCallback<BOLL> m : super.getCalculatorDataList()) {
 				// 差值
-				BigDecimal DValue = m.getClose().subtract(MA.getValue());
+				Double DValue = m.getClose() -MA.getValue();
 				// 差值的平方只和
-				varianceS2 = varianceS2.add((DValue).multiply(DValue));
+				varianceS2 = varianceS2 + DValue * DValue;
 			}
 			// 方差
-			BigDecimal variance = varianceS2.divide(fwcPeriod, 4, RoundingMode.HALF_UP);
+			Double variance = DoubleUtils.divide(varianceS2,fwcPeriod, 4);
 			// 标准差
-			BigDecimal MD = new BigDecimal(Math.sqrt(variance.doubleValue()));
+			Double MD = Math.sqrt(variance);
 
 			/*
 			 * 保留2位小数,（K为参数，可根据股票的特性来做相应的调整，一般默认为2） MB=N日的MA UP=MB+k×MD DN=MB－k×MD
 			 */
-			BigDecimal MB = maValue.setScale(2, RoundingMode.HALF_UP);
-			BigDecimal kMD = MD.multiply(k);
-			BigDecimal UP = MB.add(kMD).setScale(2, RoundingMode.HALF_UP);
-			BigDecimal DN = MB.subtract(kMD).setScale(2, RoundingMode.HALF_UP);
+			Double MB = DoubleUtils.setScale(maValue, 2);
+			Double UP = DoubleUtils.setScale(MB+k * MD, 2);
+			Double DN = DoubleUtils.setScale(MB-k * MD, 2);
 
-			getPrev().getIndicator();
 			BOLL prevBoll = getPrev().getIndicator();
 			BOLL boll = null;
 			if (prevBoll == null) {
 				boll = new BOLL(UP, MB, DN, 0);
 			} else {
 				// BOLL通道连续扩大
-				Integer bollContinueExpand = getContinueValue(balance(UP, DN),balance(prevBoll.getU(), prevBoll.getD()), prevBoll.getContinueExpand());
+				Integer bollContinueExpand = getContinueValue(UP - DN,prevBoll.getU()- prevBoll.getD(), prevBoll.getContinueExpand());
 				boll = new BOLL(UP, MB, DN, bollContinueExpand);
 			}
 			return boll;

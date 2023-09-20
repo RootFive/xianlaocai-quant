@@ -1,13 +1,12 @@
 package xlc.quant.data.indicator.calculator;
 
-import java.math.BigDecimal;
-
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import xlc.quant.data.indicator.Indicator;
 import xlc.quant.data.indicator.IndicatorCalculator;
 import xlc.quant.data.indicator.IndicatorCalculatorCallback;
+import xlc.quant.data.indicator.util.DoubleUtils;
 
 @Data
 @NoArgsConstructor
@@ -15,35 +14,35 @@ import xlc.quant.data.indicator.IndicatorCalculatorCallback;
 public class DMI extends Indicator {
 
 	/** 又名DI1或者+DI，上升方向线  */
-	private BigDecimal dip;
+	private Double dip;
 	/** 又名DI2或者-DI，下降方向线 */
-	private BigDecimal dim;
+	private Double dim;
 	
 	/** 动向平均数ADX，趋向平均线 */
-	private BigDecimal adx;
+	private Double adx;
 	
 	/** 评估数值ADXR，趋向评估线 */
-	private BigDecimal adxr;
+	private Double adxr;
 
 	//辅助计算数字
 	/** 真实波动范围（True Range） */
-	private BigDecimal tr;
+	private Double tr;
 
 	/** 上升动向（+DM）dmPlus */
-	private BigDecimal dmp;
+	private Double dmp;
 
 	/** 下降动向（-DM）dmMinus */
-	private BigDecimal dmm;
+	private Double dmm;
 
 	/** 动向指数DX */
-	private BigDecimal dx;
+	private Double dx;
 
 	/**
 	 * @param tr  真实波动范围（True Range）
 	 * @param dmp 上升动向（+DM）dmPlus
 	 * @param dmm 下降动向（-DM）dmMinus
 	 */
-	public DMI(BigDecimal tr, BigDecimal dmp, BigDecimal dmm) {
+	public DMI(Double tr, Double dmp, Double dmm) {
 		super();
 		this.tr = tr;
 		this.dmp = dmp;
@@ -68,14 +67,9 @@ public class DMI extends Indicator {
 	 * @author Rootfive
 	 */
 	private static class DMICalculator extends IndicatorCalculator<DMI> {
-		/** 正整数：2 */
-		private static final BigDecimal INT_2 = new BigDecimal(2);
-		//常量 XXX==========分隔符号
-		
 		
 		/** 趋向周期 */
 		private final int adxPeriod;
-		private final BigDecimal adxPeriodDecimal;
 
 		/**
 		 * @param diPeriod 动向周期
@@ -84,7 +78,6 @@ public class DMI extends Indicator {
 		DMICalculator(int diPeriod, int adxPeriod) {
 			super(diPeriod, false);
 			this.adxPeriod = adxPeriod;
-			this.adxPeriodDecimal = new BigDecimal(adxPeriod);
 		}
 
 		
@@ -96,31 +89,30 @@ public class DMI extends Indicator {
 			IndicatorCalculatorCallback<DMI> prev = getPrev();
 			IndicatorCalculatorCallback<DMI> head = getHead();
 
-			BigDecimal tr = null;
-			BigDecimal dmp = null;
-			BigDecimal dmm = null;
+			Double tr = null;
+			Double dmp = null;
+			Double dmm = null;
 			if (prev == null) {
-				tr = head.getHigh().subtract(head.getLow());
-				dmp = BigDecimal.ZERO;
-				dmm = BigDecimal.ZERO;
+				tr = head.getHigh()-head.getLow();
+				dmp = DoubleUtils.ZERO;
+				dmm = DoubleUtils.ZERO;
 			} else {
-				BigDecimal highLowDiff = head.getHigh().subtract(head.getLow());
-				BigDecimal highPrevCloseDiff = head.getHigh().subtract(head.getPreClose());
-				BigDecimal lowPrevCloseDiff = head.getLow().subtract(head.getPreClose());
+				Double highLowDiff = head.getHigh()- head.getLow();
+				Double highPrevCloseDiff = head.getHigh()- head.getPreClose();
+				Double lowPrevCloseDiff = head.getLow()-head.getPreClose();
+				tr = DoubleUtils.max(highLowDiff,Math.abs(highPrevCloseDiff),Math.abs(lowPrevCloseDiff));
 
-				tr = highLowDiff.max(highPrevCloseDiff.abs()).max(lowPrevCloseDiff.abs());
+				Double highMinusHighPrev = head.getHigh()-prev.getHigh();
+				dmp = Math.max(highMinusHighPrev, DoubleUtils.ZERO);
 
-				BigDecimal highMinusHighPrev = head.getHigh().subtract(prev.getHigh());
-				dmp = highMinusHighPrev.max(BigDecimal.ZERO);
-
-				BigDecimal LowPrevMinusLow = prev.getLow().subtract(head.getLow());
-				dmm = LowPrevMinusLow.max(BigDecimal.ZERO);
+				Double LowPrevMinusLow = prev.getLow()-head.getLow();
+				dmm = Math.max(LowPrevMinusLow, DoubleUtils.ZERO);
 
 				int compareTo = dmp.compareTo(dmm);
 				if (compareTo > 0) {
-					dmm = BigDecimal.ZERO;
+					dmm = DoubleUtils.ZERO;
 				} else if (dmp.compareTo(dmm) < 0) {
-					dmp = BigDecimal.ZERO;
+					dmp = DoubleUtils.ZERO;
 				}
 			}
 
@@ -128,32 +120,30 @@ public class DMI extends Indicator {
 			getHead().setIndicator(dmi);
 		
 			
-			BigDecimal trSum = super.getCalculatorDataList().stream().map(IndicatorCalculatorCallback::getIndicator)
-					.map(DMI::getTr).reduce(BigDecimal.ZERO, BigDecimal::add);
-			BigDecimal dmpSum = super.getCalculatorDataList().stream().map(IndicatorCalculatorCallback::getIndicator)
-					.map(DMI::getDmp).reduce(BigDecimal.ZERO, BigDecimal::add);
-			BigDecimal dmmSum = super.getCalculatorDataList().stream().map(IndicatorCalculatorCallback::getIndicator)
-					.map(DMI::getDmm).reduce(BigDecimal.ZERO, BigDecimal::add);
+			Double trSum = super.getCalculatorDataList().stream().map(IndicatorCalculatorCallback::getIndicator).mapToDouble(DMI::getTr).sum();
+			Double dmpSum = super.getCalculatorDataList().stream().map(IndicatorCalculatorCallback::getIndicator).mapToDouble(DMI::getDmp).sum();
+			Double dmmSum = super.getCalculatorDataList().stream().map(IndicatorCalculatorCallback::getIndicator).mapToDouble(DMI::getDmm).sum();
+					
 
-			BigDecimal dip = null;
-			BigDecimal dim = null;
-			if (BigDecimal.ZERO.compareTo(trSum) == 0) {
+			Double dip = null;
+			Double dim = null;
+			if (trSum == 0) {
 				//连续横盘的极端情况
-				dip = BigDecimal.ZERO;
-				dim = BigDecimal.ZERO;
+				dip = DoubleUtils.ZERO;
+				dim = DoubleUtils.ZERO;
 			}else {
-				dip = divideByPct(dmpSum, trSum);
-				dim = divideByPct(dmmSum, trSum);
+				dip = DoubleUtils.divideByPct(dmpSum, trSum);
+				dim = DoubleUtils.divideByPct(dmmSum, trSum);
 			}
 			dmi.setDip(dip);
 			dmi.setDim(dim);
 
 			//依据DI值可以计算出DX指标值。其计算方法是将+DI和—DI间的差的绝对值除以总和的百分比得到动向指数DX
-			BigDecimal diDiff = dip.subtract(dim).abs();
-			BigDecimal diSum = dip.add(dim);
-			BigDecimal dx = BigDecimal.ZERO;
-			if (diSum.compareTo(BigDecimal.ZERO) > 0) {
-				dx = divideByPct(diDiff, diSum);
+			Double diDiff = Math.abs(dip-dim);
+			Double diSum = dip+dim;
+			Double dx = DoubleUtils.ZERO;
+			if (diSum > DoubleUtils.ZERO) {
+				dx = DoubleUtils.divideByPct(diDiff, diSum);
 			}
 			
 			dmi.setDx(dx);
@@ -162,21 +152,20 @@ public class DMI extends Indicator {
 				return dmi;
 			}
 			
-			BigDecimal adx = null;
-			BigDecimal dxSum = super.getCalculatorDataList(adxPeriod).stream()
-					.map(IndicatorCalculatorCallback::getIndicator).map(DMI::getDx).reduce(BigDecimal.ZERO,BigDecimal::add);
-			adx = divide(dxSum, adxPeriodDecimal, 2);
+			Double adx = null;
+			Double dxSum = super.getCalculatorDataList(adxPeriod).stream().map(IndicatorCalculatorCallback::getIndicator).mapToDouble(DMI::getDx).sum();
+			adx = DoubleUtils.divide(dxSum, adxPeriod, 2);
 			
 			if (isFullCapacity()) {
 			
 			}
 			dmi.setAdx(adx);
 
-			BigDecimal adxr = null;
-			BigDecimal adxByPrevAdxPeriod = getPrevByNum(adxPeriod).getIndicator().getAdx();
+			Double adxr = null;
+			Double adxByPrevAdxPeriod = getPrevByNum(adxPeriod).getIndicator().getAdx();
 			if (adxByPrevAdxPeriod != null) {
-				adxr = divide(adx.add(adxByPrevAdxPeriod), INT_2, 2);
-				average(2, adx,adxByPrevAdxPeriod);
+				adxr = DoubleUtils.divide(adx+adxByPrevAdxPeriod, 2, 2);
+				DoubleUtils.mean(2, adx,adxByPrevAdxPeriod);
 			}
 			dmi.setAdxr(adxr);
 

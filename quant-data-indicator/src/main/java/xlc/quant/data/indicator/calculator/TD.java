@@ -1,6 +1,5 @@
 package xlc.quant.data.indicator.calculator;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 import lombok.AllArgsConstructor;
@@ -73,14 +72,14 @@ public class TD extends Indicator {
 			IndicatorCalculatorCallback<TD> compareMove = getPrevByNum(moveSize);
 			IndicatorCalculatorCallback<TD> prev = getPrev();
 
-			BigDecimal currentClose = current.getClose();
-			BigDecimal compareMoveClose = compareMove.getClose();
+			double currentClose = current.getClose();
+			double compareMoveClose = compareMove.getClose();
 
 			int tdValue = getCurrentTD(currentClose, compareMoveClose, prev.getIndicator());
 			return new TD(tdValue);
 		}
 
-		private static int getCurrentTD(BigDecimal current, BigDecimal prev, TD preTD) {
+		private static int getCurrentTD(Double current, Double prev, TD preTD) {
 			if (current == null || prev == null || preTD == null) {
 				return 0;
 			}

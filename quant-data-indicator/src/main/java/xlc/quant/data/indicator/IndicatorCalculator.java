@@ -41,15 +41,15 @@ public abstract  class IndicatorCalculator<T extends Indicator>  extends  Circul
 	 * @param preContinueValue  前连续值
 	 * @return
 	 */
-	public static int getContinueValue(BigDecimal current, BigDecimal prev, Integer preContinueValue) {
+	public static int getContinueValue(Double current, Double prev, Integer preContinueValue) {
 		if (current == null || prev == null) {
 			return 0;
 		}
-
+		
 		if (preContinueValue == null) {
 			preContinueValue = 0;
 		}
-
+		
 		int compareResult = current.compareTo(prev);
 		switch (compareResult) {
 		case 1:
@@ -93,14 +93,6 @@ public abstract  class IndicatorCalculator<T extends Indicator>  extends  Circul
 		return dividend.divide(divisor, scale, RoundingMode.HALF_UP);
 	}
 
-	/**
-	 * @param dividend 被除数:除号前面的数
-	 * @param divisor  除数:除号后面的数的
-	 * @return 百分点
-	 */
-	public static BigDecimal divideByPct(BigDecimal dividend, BigDecimal divisor) {
-		return divide(dividend, divisor, 4).multiply(HUNDRED).setScale(2);
-	}
 	
 	/**
 	 * 求差额或净额
