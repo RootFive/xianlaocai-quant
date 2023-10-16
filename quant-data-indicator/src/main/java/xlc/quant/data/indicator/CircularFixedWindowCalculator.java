@@ -192,15 +192,17 @@ public abstract class CircularFixedWindowCalculator<T, FWC extends CircularFixed
 	/**
 	 * 获取执行器数据-List格式(list按照日期倒叙)
 	 */
-	@SuppressWarnings("unchecked")
 	public List<FWC> getCalculatorDataList() {
 		List<FWC> arrayList = new ArrayList<>(circularData.length);
-		for (Object fixedWindowData : circularData) {
-			if (fixedWindowData != null) {
-				arrayList.add((FWC)fixedWindowData);
+		
+		for (int i = 0; i < circularData.length; i++) {
+			FWC fwc = getPrevByNum(i);
+			if (fwc != null) {
+				arrayList.set(i, fwc);
 			}
 		}
-		return arrayList.stream().sorted(Comparator.comparing(FWC::getTradeDateTime).reversed()).collect(Collectors.toList());
+		return arrayList;
+//		return arrayList.stream().sorted(Comparator.comparing(FWC::getTradeDateTime).reversed()).collect(Collectors.toList());
 	}
 
 	/**

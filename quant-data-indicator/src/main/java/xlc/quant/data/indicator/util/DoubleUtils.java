@@ -5,7 +5,6 @@ package xlc.quant.data.indicator.util;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.math3.stat.StatUtils;
-import org.apache.commons.math3.util.Precision;
 
 import com.google.common.primitives.Doubles;
 
@@ -41,12 +40,33 @@ public class DoubleUtils {
 	public static final double ONE_HUNDRED_MILLION = 1_0000_0000;
 	
 	
-	
-	
+	/**
+	 * 设置精度
+	 * @param value
+	 * @param newScale
+	 * @return
+	 * 将给定的 double 值乘以一个放大因子，然后使用 Math.round() 方法四舍五入，最后再除以放大因子，以达到截断小数点位数的效果。
+	 * 这种方法的性能相对较高，因为它只使用了简单的数学运算，没有涉及字符串操作或格式化。
+	 * 它直接对 double 值进行数学计算，因此在处理大量数据时能够更高效地执行。
+	 */
+	public static double setScale(double value, int newScale) {
+		double factor = Math.pow(10, newScale);
+		return Math.round(value * factor) / factor;
+	}
 
+	/**
+	 * @param value
+	 * @return 使用了循环和数学运算来获取 double 值的小数点位数。
+	 */
+	public static int getScale(double value) {
+		int decimalPlaces = 0;
+		while (value != Math.floor(value)) {
+			value *= 10;
+			decimalPlaces++;
+		}
+		return decimalPlaces;
+	}
 	
-	
-
 	/**
 	 * 获得增长率，
 	 * 
@@ -86,7 +106,7 @@ public class DoubleUtils {
 			return close;
 		}
 		double quotient  = amount/volume; 
-		return  Precision.round(quotient,scale);
+		return  setScale(quotient,scale);
 	}
 
 	/**
@@ -114,7 +134,7 @@ public class DoubleUtils {
 	 * @return
 	 */
 	public static double convertMultiple(double source, double multiple, int scale) {
-		return  Precision.round(source*multiple,scale);
+		return  setScale(source*multiple,scale);
 	}
 
 	/**
@@ -135,7 +155,7 @@ public class DoubleUtils {
 	 * @return
 	 */
 	public static double divide(double dividend, double divisor) {
-		return  Precision.round(dividend/divisor,2);
+		return  setScale(dividend/divisor,2);
 	}
 	
 	/**
@@ -145,7 +165,7 @@ public class DoubleUtils {
 	 * @return
 	 */
 	public static double divide(double dividend, double divisor, int scale) {
-		return  Precision.round(dividend/divisor,scale);
+		return  setScale(dividend/divisor,scale);
 	}
 
 	/**
@@ -155,7 +175,17 @@ public class DoubleUtils {
 	 */
 	public static double divideByPct(double dividend, double divisor) {
 		double quotient  = dividend/divisor; 
-		return Precision.round(quotient*100,2);
+		return setScale(quotient*100,2);
+	}
+	
+	/**
+	 * @param dividend 被除数:除号前面的数
+	 * @param divisor  除数:除号后面的数的
+	 * @return 4位小数
+	 */
+	public static double divideByScale4(double dividend, double divisor) {
+		double quotient  = dividend/divisor; 
+		return setScale(quotient,4);
 	}
 
 	/**
@@ -165,7 +195,7 @@ public class DoubleUtils {
 	 * @return
 	 */
 	public static double multiply(double multiplicand, double multiplier, int scale) {
-		return Precision.round(multiplicand*multiplier , scale);
+		return setScale(multiplicand*multiplier , scale);
 	}
 	
 	/**
@@ -194,19 +224,11 @@ public class DoubleUtils {
 				sum = sum +d;
 			}
 		}
-		return Precision.round(sum , scale);
+		return setScale(sum , scale);
 	}
 	
 	
-	/**
-	 * 设置精度
-	 * @param d
-	 * @param scale
-	 * @return
-	 */
-	public static double setScale(double d, int scale) {
-		return Precision.round(d , scale);
-	}
+
 	
 	
 	/**
@@ -220,7 +242,7 @@ public class DoubleUtils {
 			return ZERO;
 		}
 		double average = StatUtils.mean(numbers);
-		return Precision.round(average , scale);
+		return setScale(average , scale);
 	}
 	
 	/**

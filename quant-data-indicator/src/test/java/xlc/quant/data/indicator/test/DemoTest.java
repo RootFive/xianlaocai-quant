@@ -47,7 +47,7 @@ public class DemoTest {
 		//MACD-计算器
 		IndicatorCalculator<MACD> macdCalculator = MACD.buildCalculator(12, 26, 9);
 		//BOLL-计算器
-		IndicatorCalculator<BOLL> bollCalculator = BOLL.buildCalculator(20, 2);
+		IndicatorCalculator<BOLL> bollCalculator = BOLL.buildCalculator(20, 2,2,4);
 
 		//TOPMV-计算器
 		IndicatorCalculator<TOPMV> topmvCalculator20_3 = TOPMV.buildCalculator(20, 3);

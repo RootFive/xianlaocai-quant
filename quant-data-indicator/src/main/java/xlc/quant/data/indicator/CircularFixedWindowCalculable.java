@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
  * PS:思路来源于：限流算法-固定窗口算法（Fixed Window Algorithm）
  */
 public interface CircularFixedWindowCalculable {
-
+	
 	/**
 	 * @return the tradeDateTime
 	 */
@@ -18,5 +18,11 @@ public interface CircularFixedWindowCalculable {
 	 * @param tradeDateTime the tradeDateTime to set
 	 */
 	void setTradeDateTime(LocalDateTime tradeDateTime);
+	
+	
+	
+	
+	
+	
 
 }

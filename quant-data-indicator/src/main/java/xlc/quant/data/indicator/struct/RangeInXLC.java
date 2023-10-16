@@ -28,7 +28,6 @@ public class RangeInXLC<C extends Comparable<?>> {
 		public int compare(final Object obj1, final Object obj2) {
 			return ((Comparable) obj1).compareTo(obj2);
 		}
-		
 	}
 	
 	

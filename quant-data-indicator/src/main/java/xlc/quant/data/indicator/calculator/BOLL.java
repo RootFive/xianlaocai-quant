@@ -57,10 +57,12 @@ public class BOLL extends Indicator {
 	 * 构建计算器
 	 * @param capacity
 	 * @param k
+	 * @param indicatorSetScale        指标精度
+	 * @param assistIndicatorSetScale  辅助指标精度
 	 * @return
 	 */
-	public static IndicatorCalculator<BOLL> buildCalculator(int capacity, double k) {
-		return new BOLLCalculator(capacity, k);
+	public static IndicatorCalculator<BOLL> buildCalculator(int capacity, double k,int indicatorSetScale,int assistIndicatorSetScale) {
+		return new BOLLCalculator(capacity, k, indicatorSetScale, assistIndicatorSetScale);
 	}
 
 	/**
@@ -79,17 +81,26 @@ public class BOLL extends Indicator {
 
 		/** K为参数，可根据股票的特性来做相应的调整，一般默认为2 */
 		private final Double k;
+		
+		/** 指标精度 */
+		private final int indicatorSetScale;
+		/** 辅助指标精度 */
+		private final int assistIndicatorSetScale;
 
 		/**
 		 * 各大股票交易软件默认N是20，所以MB等于当日20日均线值，（K为参数，可根据股票的特性来做相应的调整，一般默认为2）
 		 * 
 		 * @param period 布林线指标的参数N,指的是K线的个数,默认20
 		 * @param k        K为参数，可根据股票的特性来做相应的调整，一般默认为2
+		 * @param indicatorSetScale        指标精度
+		 * @param assistIndicatorSetScale  辅助指标精度
 		 */
-		BOLLCalculator(int period, double k) {
+		BOLLCalculator(int period, double k,int indicatorSetScale,int assistIndicatorSetScale) {
 			super((period <= 0 ? DEFAULT_PERIOD : period), false);
 			this.maCalculator = MA.buildCalculator(period <= 0 ? DEFAULT_PERIOD : period);
 			this.k =  k <= 0 ? DEFAULT_K : k;
+			this.indicatorSetScale =  indicatorSetScale;
+			this.assistIndicatorSetScale =  assistIndicatorSetScale;
 		}
 
 		@Override
@@ -115,16 +126,16 @@ public class BOLL extends Indicator {
 				varianceS2 = varianceS2 + DValue * DValue;
 			}
 			// 方差
-			Double variance = DoubleUtils.divide(varianceS2,fwcPeriod, 4);
+			Double variance = DoubleUtils.divide(varianceS2,fwcPeriod, assistIndicatorSetScale);
 			// 标准差
 			Double MD = Math.sqrt(variance);
 
 			/*
-			 * 保留2位小数,（K为参数，可根据股票的特性来做相应的调整，一般默认为2） MB=N日的MA UP=MB+k×MD DN=MB－k×MD
+			 * （K为参数，可根据股票的特性来做相应的调整，一般默认为2） MB=N日的MA UP=MB+k×MD DN=MB－k×MD
 			 */
-			Double MB = DoubleUtils.setScale(maValue, 2);
-			Double UP = DoubleUtils.setScale(MB+k * MD, 2);
-			Double DN = DoubleUtils.setScale(MB-k * MD, 2);
+			Double MB = DoubleUtils.setScale(maValue, indicatorSetScale);
+			Double UP = DoubleUtils.setScale(MB+k * MD, indicatorSetScale);
+			Double DN = DoubleUtils.setScale(MB-k * MD, indicatorSetScale);
 
 			BOLL prevBoll = getPrev().getIndicator();
 			BOLL boll = null;
