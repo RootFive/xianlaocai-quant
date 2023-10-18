@@ -1,7 +1,9 @@
 # xianlaocai-quant
 
 ## 交流群信息:
-QQ群号：223606797，（加群备注：quant，进群后找群主要微信交流群），点击加入[![加入QQ群](https://img.shields.io/badge/223606797-blue.svg)](https://jq.qq.com/?_wv=1027&k=3l0rfaJP)  【QQ交流群：223606797】
+点击加入【QQ交流群】[![加入QQ群](https://img.shields.io/badge/223606797-blue.svg)](https://jq.qq.com/?_wv=1027&k=3l0rfaJP)  
+
+QQ群号：223606797，（加群备注：quant，进群后找群主要微信交流群）
 
 ## 介绍
 xianlaocai-quant是一个父工程，目前仅仅开源一个包，会逐步开源子模块。
