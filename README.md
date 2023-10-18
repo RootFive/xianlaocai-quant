@@ -1,5 +1,8 @@
 # xianlaocai-quant
 
+## 交流群信息:
+QQ群号：223606797，（加群备注：quant，进群后找群主要微信交流群），点击加入【QQ交流群：223606797】[![加入QQ群](https://img.shields.io/badge/223606797-blue.svg)](https://jq.qq.com/?_wv=1027&k=3l0rfaJP)
+
 ## 介绍
 xianlaocai-quant是一个父工程，目前仅仅开源一个包，会逐步开源子模块。
 
@@ -9,11 +12,51 @@ xianlaocai-quant是一个父工程，目前仅仅开源一个包，会逐步开�
 ### quant-data-indicator
 基于Java实现常见指标MACD,RSI,BOLL,KDJ,CCI,MA,EMA,BIAS,TD,WR,DMI等,全部封装，简洁且准确，能非常方便的应用在各自股票股市技术分析，股票自动程序化交易,数字货币BTC等量化等领域.
 
+
+
+## 使用说明
+
+### Maven直接引用
+
+Maven地址（更新较快）阿里云Maven仓库搜索关键词：quant-data-indicator， 
+
+阿里云Maven仓库地址：https://developer.aliyun.com/mvn/search
+
+mvnrepository地址（更新较慢）：https://mvnrepository.com/artifact/com.xianlaocai.quant/quant-data-indicator
+
+1.  IDE: Ecplse或者IDEA均可
+
+2. Maven
+
+```xml
+	<dependency>
+		<groupId>com.xianlaocai.quant</groupId>
+		<artifactId>quant-data-indicator</artifactId>
+		<version>XLCQ20231018</version>
+	</dependency>
+```
+
+
+Gradle
+
+```xml
+// https://mvnrepository.com/artifact/com.xianlaocai.quant/quant-data-indicator
+implementation group: 'com.xianlaocai.quant', name: 'quant-data-indicator', version: 'XLCQ20231018'
+
+```
+### 基表计算示例 
+1.  A股：/quant-data-indicator/src/test/java/xlc/quant/data/indicator/test/stock/StockTest.java
+
+2.  币圈：/quant-data-indicator/src/test/java/xlc/quant/data/indicator/test/coin/CoinTest.java
+
+
 ## 软件架构
 java最低最低JDK1.8（Java8），Maven聚合父子项目，会逐步开源子模块。
 
+
 ### quant-data-indicator中指标计算实现说明
-#### 4个重要的类
+#### 5个重要的类
+
 1、FixedWindowCalculator：固定窗口 计算器
 
 ```java
@@ -23,13 +66,13 @@ java最低最低JDK1.8（Java8），Maven聚合父子项目，会逐步开源子
  * @author Rootfive
  * 
  */
-public abstract class CircularFixedWindowCalculator<T, FWC extends CircularFixedWindowCalculable> {
-
+public abstract class CircularFixedWindowCalculator<FWC extends CircularFixedWindowCalculable<?>,I> {
+	
 	/** 需要计算的数据：指[固定窗口环形数组]中的数据 */
 	protected final transient Object [] circularData;
 
 	/** 环形数组最大长度，[固定窗口环形数组]时间周期 */
-	protected final transient BigDecimal fwcPeriod;
+	protected final transient int fwcPeriod;
 
 	/** 执行总数 */
 	protected int executeTotal = 0;
@@ -48,32 +91,34 @@ public abstract class CircularFixedWindowCalculator<T, FWC extends CircularFixed
 	public CircularFixedWindowCalculator(int fwcMax, boolean isFullCapacityCalculate) {
 		super();
 		this.circularData =  new Object [fwcMax];
-		this.fwcPeriod = new BigDecimal(fwcMax);
+		this.fwcPeriod = fwcMax;
 		this.isFullCapacityCalculate = isFullCapacityCalculate;
 	}
 
 	// ==========XXX===================
 	/**
 	 * 执行计算，由子类具体某个指标的计算器实现
-	 * 
+	 * @param propertyGetter  委托方法，上一个载体获取上一个计算结果
+	 * @param propertySetter  委托方法，设置计算结果到载体的哪个属性
 	 * @return
 	 */
-	protected abstract T executeCalculate();
+	protected abstract I executeCalculate(Function<FWC, I> propertyGetter,Consumer<I> propertySetter);
 
 	// ==========XXX===================
 
 	/**
-	 * 输入数据
-	 * @param newFwc 新的固定窗口数据
+	 * @param newFwc         输入新数据
+	 * @param propertyGetter  委托方法，上一个载体获取上一个计算结果
+	 * @param propertySetter  委托方法，设置计算结果到载体的哪个属性
 	 * @return
 	 */
-	public synchronized T input(FWC newFwc) {
+	public synchronized I input(FWC newFwc,Function<FWC, I> propertyGetter,Consumer<I> propertySetter) {
 		boolean addResult = addFirst(newFwc);
 		if (addResult) {
 			// 新增成功
 			if (!isFullCapacityCalculate || (isFullCapacityCalculate && this.isFullCapacity())) {
 				// 1、不是满容计算 [或] 2满容计算且已经满容，二者条件满足其中一种。均可执行计算（指标）
-				return executeCalculate();
+				return executeCalculate(propertyGetter,propertySetter);
 			}
 		}
 		return null;
@@ -102,138 +147,186 @@ public abstract class Indicator {
  * 
  * @author Rootfive
  */
-public abstract  class IndicatorCalculator<T extends Indicator>  extends  CircularFixedWindowCalculator<T,IndicatorCalculatorCallback<T>> {
-
-
-	//........
-	//其他代码请看代码实现
-	//........
-
-	/**
-	 * @param callback 新窗口数据
-	 * @return
-	 */
-	@Override
-	public T execute(IndicatorCalculatorCallback<T> callback) {
-		T indicator = super.execute(callback);
-		callback.setIndicator(indicator);
-		return indicator;
-	}
-	
-
-	
-	
+public abstract  class IndicatorCalculator<C extends IndicatorComputeCarrier<?>,I>  extends  CircularFixedWindowCalculator<C,I> {
 	//........
 	//其他代码请看代码实现
 	//........
 }
 ```
 
-4、IndicatorCalculatorCallback：指标计算载体，用来计算指标并返回
+4、CircularFixedWindowCalculable：可以进行指标计算载体顶级接口
 
 ```java
 /**
- * 指标计算载体
- * 
- * 用来计算指标并返回
- * 
  * @author Rootfive
+ * 将时间划分为固定大小的窗口（年、月、日、时、分），统计每个窗口内的请求行情.
+ * PS:思路来源于：限流算法-固定窗口算法（Fixed Window Algorithm）
  * 
+ * 时间窗口的 终点是收盘时间，时间可以是【时间戳long】 或者是LocalDateTime、LocalDate、LocalTime
+ */
+public interface CircularFixedWindowCalculable<C extends Comparable<? super C>> {
+
+	/**
+	 * @return 收盘时间 
+	 */
+	C getCloseTime();
+	/**
+	 * @param closeTime 收盘时间  
+	 */
+	void setCloseTime(C closeTime);
+
+	/**
+	 * @return 交易时间
+	 */
+	C getTradeTime();
+	/**
+	 * @param tradeTime 交易时间 
+	 */
+	void setTradeTime(C tradeTime);
+
+}
+```
+
+5、IndicatorComputeCarrier：指标计算载体，用来计算指标并返回
+
+```java
+
+/**
+ * 指标计算载体
  * 注意：下面的行情数据，如果是A股。请一定要使用复权数据，前复权和后复权均可
  */
-@Data
-@NoArgsConstructor
-public  class IndicatorCalculatorCallback<T extends Indicator> implements CircularFixedWindowCalculable{
+public interface IndicatorComputeCarrier<C extends Comparable<? super C>> extends CircularFixedWindowCalculable<C>{
+	/**
+	 * @return 开盘价
+	 */
+	double getOpen();
+	/**
+	 * @param open 开盘价
+	 */
+	void setOpen(double open);
 
-	/** 计算出来的指标结果 XXX */
-	protected T indicator;
-
-	// =======================
-	// 下面的是计算条件
-	// =======================
-	/** 证券代码 */
-	protected String symbol;
-
-	/** 交易日期时间 */
-	protected LocalDateTime tradeDateTime;
-
-	/** 收盘价(元) */
-	protected BigDecimal close;
-
-	/** 开盘价(元) */
-	protected BigDecimal open;
-
-	/** 最高价(元) */
-	protected BigDecimal high;
-
-	/** 最低价(元) */
-	protected BigDecimal low;
-
-	/** 成交量(股/份/个) */
-	protected BigDecimal volume;
-
-	/** 成交额(元) */
-	protected BigDecimal amount;
-
-	// =======================
-	// 上面的属性值，一般情况下，分时和日行情都有
-	// 下面的属性值，一般情况下，分时和日行情可能有，即便是没有，也可以通过上面的属性计算得出
-	// =======================
-	/** 前收 (元) */
-	protected BigDecimal preClose;
-
-	/** 前收 涨跌额(元) */
-	protected BigDecimal priceChange;
-
-	/** 涨跌幅（%） */
-	protected BigDecimal pctChange;
-
-	/** 价格震幅（%） */
-	protected BigDecimal amplitude;
+	
+	
+	/**
+	 * @return 最低价
+	 */
+	double getLow();
+	/**
+	 * @param low 最低价
+	 */
+	void setLow(double low);
 	
 	
 
 	/**
-	 * 复合指标计算时，同一个行情，可能需要同时计算多种指标时，需要转换
-	 * @param carrier
+	 * @return 最高价
 	 */
-	public IndicatorCalculatorCallback(IndicatorCalculatorCallback<?> carrier) {
-		super();
-		// this.indicator = indicator;
-		this.symbol = carrier.getSymbol();
-		this.tradeDateTime = carrier.getTradeDateTime();
-		this.close = carrier.getClose();
-		this.open = carrier.getOpen();
-		this.high = carrier.getHigh();
-		this.low = carrier.getLow();
-		this.volume = carrier.getVolume();
-		this.amount = carrier.getAmount();
-		this.preClose = carrier.getPreClose();
-		this.priceChange = carrier.getPriceChange();
-		this.pctChange = carrier.getPctChange();
-		this.amplitude = carrier.getAmplitude();
-	}
+	double getHigh();
+	/**
+	 * @param high 最高价
+	 */
+	void setHigh(double high);
+	
+	
+	
+	/**
+	 * @return 收盘价(当前K线未结束的即为最新交易价)
+	 */
+	double getClose();
+	/**
+	 * @param close 收盘价(当前K线未结束的即为最新交易价)
+	 */
+	void setClose(double close);
+
+	
+	
+	/**
+	 * @return 成交量
+	 */
+	double getVolume();
+	/**
+	 * @param volume 成交量
+	 */
+	void setVolume(double volume);
+
+	
+	/**
+	 * @return 成交额
+	 */
+	double getAmount();
+	/**
+	 * @param amount 成交额 
+	 */
+	void setAmount(double amount);
+	
+	
+	// =======================XXX 
+	// 上面的属性值，一般情况下，分时和日行情都有
+	// 下面的属性值，一般情况下，分时和日行情可能有，即便是没有，也可以通过上面的属性计算得出
+	// =======================XXX
+	
+	/**
+	 * @return 前收价格
+	 */
+	double getPreClose();
+	/**
+	 * @param preClose 前收价格
+	 */
+	void setPreClose(double preClose);
+	
+	
+
+	/**
+	 * @return 前收 涨跌额
+	 */
+	double getPriceChange();
+	/**
+	 * @param priceChange 前收 涨跌额
+	 */
+	void setPriceChange(double priceChange);
+
+	
+	/**
+	 * @return 涨跌幅（百分点）
+	 */
+	double getPctChange();
+	/**
+	 * @param pctChange 涨跌幅（百分点）
+	 */
+	void setPctChange(double pctChange);
+	
+
+	/**
+	 * @return 价格震幅（百分点）
+	 */
+	double getAmplitude();
+	/**
+	 * @param amplitude 价格震幅（百分点）
+	 */
+	void setAmplitude(double amplitude);
+
 }
 ```
 
 #### 实现一个新的指标方法
 
 1.  继承 Indicator指标父类 ，并定义指标值
-2.  继承 IndicatorCalculator指标父类计算器 ，实现executeCalculate()方法，
+2.  继承 IndicatorCalculator指标父类计算器 ，实现executeCalculate(Function<C, Double> propertyGetter,Consumer<Double> propertySetter) 方法，
 
 ```java
 	/**
 	 * 执行计算，由子类具体某个指标的计算器实现
-	 * 
+	 * @param propertyGetter  委托方法，上一个载体获取上一个计算结果
+	 * @param propertySetter  委托方法，设置计算结果到载体的哪个属性
 	 * @return
 	 */
-	protected abstract T executeCalculate();
+	protected abstract I executeCalculate(Function<FWC, I> propertyGetter,Consumer<I> propertySetter);
 ```
 
 #### 指标实现举例：移动平均线MA
 
 1.  继承 Indicator指标父类 ，并定义指标值
-2.  继承 IndicatorCalculator指标父类计算器 ，实现executeCalculate()方法，
+2.  继承 IndicatorCalculator指标父类计算器 ，实现顶层抽象类CircularFixedWindowCalculator中的抽象方法executeCalculate(Function<FWC, I> propertyGetter,Consumer<I> propertySetter)方法，
 
 ```java
 
@@ -251,14 +344,8 @@ public  class IndicatorCalculatorCallback<T extends Indicator> implements Circul
  *    用EMA追底，用MA识顶。 例如，用20天EMA判断底部，用20天MA判断顶部。
  */
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class MA extends Indicator {
-
-	/** MA计算值  */
-	private BigDecimal value;
-
 	
 	//=============
 	//内部类分隔符 XXX
@@ -266,86 +353,62 @@ public class MA extends Indicator {
 	/**
 	 * 构建-计算器
 	 * @param capacity
+	 * @param indicatorSetScale        指标精度
 	 * @return
 	 */
-	public static IndicatorCalculator<MA> buildCalculator(int capacity) {
-		return new MACalculator(capacity);
+	@SuppressWarnings("rawtypes")
+	public static <C extends IndicatorComputeCarrier>  IndicatorCalculator<C, Double> buildCalculator(int capacity,int indicatorSetScale) {
+		return new MACalculator<>(capacity,indicatorSetScale);
 	}
 
 	/**
 	 * 内部类实现MA计算器
 	 * @author Rootfive
 	 */
-	private static class MACalculator extends IndicatorCalculator<MA> {
-
+	private static class MACalculator<C extends IndicatorComputeCarrier<?>>  extends IndicatorCalculator<C, Double> {
+		/** 指标精度 */
+		private final int indicatorSetScale;
+		
 		/**
 		 * @param capacity
 		 */
-		MACalculator(int capacity) {
+		MACalculator(int capacity,int indicatorSetScale) {
 			super(capacity, true);
+			this.indicatorSetScale =  indicatorSetScale;
 		}
 
 		@Override
-		protected MA executeCalculate() {
-			BigDecimal maValue = null;
-			if (isFullCapacity()) {
-				BigDecimal closeSumValue = super.getCalculatorListData().stream().map(IndicatorCalculatorCallback::getClose).reduce(BigDecimal::add).get();
-				maValue = divide(closeSumValue, fwcPeriod, 2);
-				return new MA(maValue);
+		protected Double executeCalculate(Function<C, Double> propertyGetter,Consumer<Double> propertySetter) {
+			double closeSumValue = DoubleUtils.ZERO;
+			for (int i = 0; i < circularData.length; i++) {
+				closeSumValue = closeSumValue+ getPrevByNum(i).getClose();
 			}
-			return null;
+			
+			double maValue = DoubleUtils.divide(closeSumValue, fwcPeriod, indicatorSetScale);
+			//设置计算结果
+			propertySetter.accept(maValue);
+			return maValue;
 		}
 
 	}
 
 }
 
-
 ```
 
 
-## 使用说明
 
-### Maven直接引用
-
-Maven地址（更新较快）阿里云Maven仓库搜索关键词：quant-data-indicator， 
-
-阿里云Maven仓库地址：https://developer.aliyun.com/mvn/search
-
-mvnrepository地址（更新较慢）：https://mvnrepository.com/artifact/com.xianlaocai.quant/quant-data-indicator
-
-1.  IDE: Ecplse或者IDEA均可
-
-2. Maven
-
-```xml
-	<dependency>
-		<groupId>com.xianlaocai.quant</groupId>
-		<artifactId>quant-data-indicator</artifactId>
-		<version>XLCQ20230920</version>
-	</dependency>
-```
-
-Gradle
-
-```xml
-// https://mvnrepository.com/artifact/com.xianlaocai.quant/quant-data-indicator
-implementation group: 'com.xianlaocai.quant', name: 'quant-data-indicator', version: 'XLCQ20230920'
-
-```
-
-2.  请看项目中的测试例子：/quant-data-indicator/src/test/java/xlc/quant/data/indicator/test/DemoTest.java
 
 
 
 ## 参与贡献
 
+多提意见！！!
 1.  Fork 本仓库
 2.  新建 Feat_xxx 分支
 3.  提交代码
 4.  新建 Pull Request
 
 
-## 交流群信息
-暂时没有，后续筹备，可以先加QQ：2236067977（备注：quant），欢迎指出不足。谢谢
+
 

@@ -1,14 +1,13 @@
 package xlc.quant.data.indicator.calculator;
 
-import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
 import xlc.quant.data.indicator.Indicator;
 import xlc.quant.data.indicator.IndicatorCalculator;
-import xlc.quant.data.indicator.IndicatorCalculatorCallback;
+import xlc.quant.data.indicator.IndicatorComputeCarrier;
 
 
 /**
@@ -21,13 +20,8 @@ import xlc.quant.data.indicator.IndicatorCalculatorCallback;
  * 
  */
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class TD extends Indicator {
-
-	/** TD序列值 */
-	private Integer value;
 
 	//=============
 	//内部类分隔符 XXX
@@ -37,8 +31,9 @@ public class TD extends Indicator {
 	 * @param capacity
 	 * @return
 	 */
-	public static IndicatorCalculator<TD> buildCalculator(int capacity, int moveSize) {
-		return new TDCalculator(capacity, moveSize);
+	@SuppressWarnings("rawtypes")
+	public static <C extends IndicatorComputeCarrier> IndicatorCalculator<C, Integer> buildCalculator(int capacity, int moveSize) {
+		return new TDCalculator<>(capacity, moveSize);
 	}
 
 
@@ -46,7 +41,7 @@ public class TD extends Indicator {
 	 * 计算器
 	 * @author Rootfive
 	 */
-	private static class TDCalculator extends IndicatorCalculator<TD> {
+	private static class TDCalculator<C extends IndicatorComputeCarrier<?>> extends IndicatorCalculator<C, Integer> {
 
 		private final int moveSize;
 
@@ -60,42 +55,42 @@ public class TD extends Indicator {
 		}
 
 		@Override
-		protected TD executeCalculate() {
-			List<IndicatorCalculatorCallback<TD>> calculatorListData = getCalculatorDataList();
-
-			if (calculatorListData.size() < (1 + moveSize)) {
+		protected Integer executeCalculate(Function<C, Integer> propertyGetter,Consumer<Integer> propertySetter) {
+			if (executeTotal < (1 + moveSize)) {
 				return null;
 			}
 
 			// 第一根
-			IndicatorCalculatorCallback<TD> current = getHead();
-			IndicatorCalculatorCallback<TD> compareMove = getPrevByNum(moveSize);
-			IndicatorCalculatorCallback<TD> prev = getPrev();
+			C current = getHead();
+			C compareMove = getPrevByNum(moveSize);
+			C prev = getPrev();
 
 			double currentClose = current.getClose();
 			double compareMoveClose = compareMove.getClose();
 
-			int tdValue = getCurrentTD(currentClose, compareMoveClose, prev.getIndicator());
-			return new TD(tdValue);
+			int tdValue = getCurrentTD(currentClose, compareMoveClose, propertyGetter.apply(prev));
+			//设置计算结果
+			propertySetter.accept(tdValue);
+			return tdValue;
 		}
 
-		private static int getCurrentTD(Double current, Double prev, TD preTD) {
+		private static int getCurrentTD(Double current, Double prev, Integer preTD) {
 			if (current == null || prev == null || preTD == null) {
 				return 0;
 			}
-			int preContinueValue = preTD.getValue();
+			
 			int compareResult = current.compareTo(prev);
 			if (compareResult > 0) {
-				if (preContinueValue > 0) {
-					return preContinueValue + 1;
+				if (preTD > 0) {
+					return preTD + 1;
 				} else {
 					return 1;
 				}
 			} else if (compareResult < 0) {
-				if (preContinueValue >= 0) {
+				if (preTD >= 0) {
 					return -1;
 				} else {
-					return preContinueValue - 1;
+					return preTD - 1;
 				}
 			}
 			return 0;

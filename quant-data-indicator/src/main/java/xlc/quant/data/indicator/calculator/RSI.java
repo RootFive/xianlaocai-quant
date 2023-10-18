@@ -1,11 +1,14 @@
 package xlc.quant.data.indicator.calculator;
 
+import java.util.function.Consumer;
+import java.util.function.Function;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import xlc.quant.data.indicator.Indicator;
 import xlc.quant.data.indicator.IndicatorCalculator;
-import xlc.quant.data.indicator.IndicatorCalculatorCallback;
+import xlc.quant.data.indicator.IndicatorComputeCarrier;
 import xlc.quant.data.indicator.util.DoubleUtils;
 
 /**
@@ -59,15 +62,16 @@ public class RSI extends Indicator {
 	 * @param capacity
 	 * @return
 	 */
-	public static IndicatorCalculator<RSI> buildCalculator(int capacity) {
-		return new RSICalculator(capacity);
+	@SuppressWarnings("rawtypes")
+	public static <C extends IndicatorComputeCarrier> IndicatorCalculator<C, RSI> buildCalculator(int capacity) {
+		return new RSICalculator<>(capacity);
 	}
 
 	/**
 	 * 计算器
 	 * @author Rootfive
 	 */
-	private static class RSICalculator extends IndicatorCalculator<RSI> {
+	private static class RSICalculator<C extends IndicatorComputeCarrier<?>> extends IndicatorCalculator<C, RSI> {
 
 		private final double α;
 		private final double β;
@@ -77,29 +81,26 @@ public class RSI extends Indicator {
 		 */
 		public RSICalculator(int capacity) {
 			super(capacity, true);
-			this.α = DoubleUtils.divide(capacity - 1, capacity, 8);
+			this.α = DoubleUtils.divide(capacity - 1, capacity, DoubleUtils.MAX_SCALE);
 			this.β = 1 - α;
 		}
 
 		@Override
-		protected RSI executeCalculate() {
+		protected RSI executeCalculate(Function<C, RSI> propertyGetter,Consumer<RSI> propertySetter) {
 
 			Double emaUp = null;
 			Double emaDown = null;
 
-			RSI prevRSI = getPrev().getIndicator();
+			RSI prevRSI = propertyGetter.apply(getPrev());
 			if (prevRSI == null) {
 				// 涨额之和
 				Double sumUp = DoubleUtils.ZERO;
 				// 跌额之和
 				Double sumDown = DoubleUtils.ZERO;
-				for (IndicatorCalculatorCallback<RSI> calculate : super.getCalculatorDataList()) {
+				
+				for (int i = 0; i < circularData.length; i++) {
+					C calculate = getPrevByNum(i);
 					Double changePrice = calculate.getPriceChange();
-					if (changePrice == null) {
-						// 第一根K线可能没有统计到涨跌幅，跳过
-						continue;
-					}
-
 					// 涨幅之和累加
 					if (changePrice > DoubleUtils.ZERO) {
 						sumUp = sumUp + Math.abs(changePrice);
@@ -108,13 +109,13 @@ public class RSI extends Indicator {
 					}
 				}
 
-				emaUp = DoubleUtils.divide(sumUp, fwcPeriod, 4);
-				emaDown = DoubleUtils.divide(sumDown, fwcPeriod, 4);
+				emaUp = DoubleUtils.divide(sumUp, fwcPeriod, DoubleUtils.MAX_SCALE);
+				emaDown = DoubleUtils.divide(sumDown, fwcPeriod, DoubleUtils.MAX_SCALE);
 			} else {
 				Double prevEmaUp = prevRSI.getEmaUp();
 				Double prevEmaDown = prevRSI.getEmaDown();
 
-				IndicatorCalculatorCallback<RSI> head = getHead();
+				C head = getHead();
 				Double changePrice = head.getPriceChange();
 
 				// 涨幅之和累加
@@ -136,12 +137,16 @@ public class RSI extends Indicator {
 			}
 
 			Double sumEmaChanges = emaUp + emaDown;
-			Double rsi = null;
+			Double rsiValue = null;
 
 			if (sumEmaChanges.compareTo(DoubleUtils.ZERO) != 0) {
-				rsi = DoubleUtils.divideByPct(emaUp, sumEmaChanges);
+				rsiValue = DoubleUtils.divideByPct(emaUp, sumEmaChanges);
 			}
-			return new RSI(rsi, emaUp, emaDown);
+			
+			RSI rsi = new RSI(rsiValue, emaUp, emaDown);
+			//设置计算结果
+			propertySetter.accept(rsi);
+			return rsi;
 		}
 
 	}

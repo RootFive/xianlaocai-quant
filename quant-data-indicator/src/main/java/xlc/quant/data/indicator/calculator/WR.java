@@ -1,14 +1,13 @@
 package xlc.quant.data.indicator.calculator;
 
-import java.util.Comparator;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
 import xlc.quant.data.indicator.Indicator;
 import xlc.quant.data.indicator.IndicatorCalculator;
-import xlc.quant.data.indicator.IndicatorCalculatorCallback;
+import xlc.quant.data.indicator.IndicatorComputeCarrier;
 import xlc.quant.data.indicator.util.DoubleUtils;
 
 /**
@@ -35,14 +34,8 @@ import xlc.quant.data.indicator.util.DoubleUtils;
  * 同时，使用过程中应该注意与其他技术指标相互配合。在盘整的过程中，W&R的准确性较高，而在上升或下降趋势当中，却不能只以W&R超买超卖信号作为行情判断的依据。
  */
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class WR extends Indicator {
-
-	private Double value;
-
-	
 	//=============
 	//内部类分隔符 XXX
 	//=============
@@ -51,15 +44,16 @@ public class WR extends Indicator {
 	 * @param capacity
 	 * @return
 	 */
-	public static IndicatorCalculator<WR> buildCalculator(int capacity) {
-		return new WRIndicatorCalculateExecutor(capacity);
+	@SuppressWarnings("rawtypes")
+	public static <C extends IndicatorComputeCarrier> IndicatorCalculator<C, Double> buildCalculator(int capacity) {
+		return new WRIndicatorCalculateExecutor<>(capacity);
 	}
 
 	/**
 	 * 计算器
 	 * @author Rootfive
 	 */
-	private static class WRIndicatorCalculateExecutor extends IndicatorCalculator<WR> {
+	private static class WRIndicatorCalculateExecutor<C extends IndicatorComputeCarrier<?>> extends IndicatorCalculator<C, Double> {
 
 		/**
 		 * @param capacity
@@ -69,26 +63,30 @@ public class WR extends Indicator {
 		}
 
 		@Override
-		protected WR executeCalculate() {
-			IndicatorCalculatorCallback<WR> head = getHead();
+		protected Double executeCalculate(Function<C, Double> propertyGetter,Consumer<Double> propertySetter) {
+			C head = getHead();
 
-			Double headClose = head.getClose();
-			Double maxHigh = null;
-			Double minLow = null;
-
-			maxHigh = super.getCalculatorDataList().stream().max(Comparator.comparing(IndicatorCalculatorCallback::getHigh))
-					.get().getHigh();
-			minLow = super.getCalculatorDataList().stream().min(Comparator.comparing(IndicatorCalculatorCallback::getLow))
-					.get().getLow();
+			double headClose = head.getClose();
+			double maxHigh = head.getHigh();
+			double minLow = head.getLow();
+			for (int i = 1; i < circularData.length; i++) {
+				C callback = getPrevByNum(i);
+				maxHigh = Math.max(maxHigh, callback.getHigh());
+				minLow = Math.min(minLow, callback.getLow());
+			}
 			// 计算公式：W%R=（Hn—C）÷（Hn—Ln）×100其中
 			Double wrValue = null;
-			if (maxHigh.compareTo(minLow) == 0) {
+			if (maxHigh == minLow) {
 				//连续横盘的极端情况maxHigh=minLow
 				wrValue = DoubleUtils.ZERO;
 			}else {
 				wrValue = DoubleUtils.divideByPct(maxHigh-headClose, maxHigh-minLow);
 			}
-			return new WR(wrValue);
+			
+			//设置计算结果
+			propertySetter.accept(wrValue);
+			
+			return wrValue;
 		}
 
 	}

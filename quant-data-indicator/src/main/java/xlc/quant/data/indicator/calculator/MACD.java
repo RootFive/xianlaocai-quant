@@ -1,11 +1,14 @@
 package xlc.quant.data.indicator.calculator;
 
+import java.util.function.Consumer;
+import java.util.function.Function;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import xlc.quant.data.indicator.Indicator;
 import xlc.quant.data.indicator.IndicatorCalculator;
-import xlc.quant.data.indicator.IndicatorCalculatorCallback;
+import xlc.quant.data.indicator.IndicatorComputeCarrier;
 import xlc.quant.data.indicator.util.DoubleUtils;
 
 /**
@@ -56,56 +59,77 @@ public class MACD extends Indicator {
 	 * @param difCycle
 	 * @return
 	 */
-	public static IndicatorCalculator<MACD> buildCalculator(int fastCycle, int slowCycle, int difCycle) {
-		return new MACDCalculator(fastCycle, slowCycle, difCycle);
+	@SuppressWarnings("rawtypes")
+	public static <C extends IndicatorComputeCarrier> IndicatorCalculator<C, MACD> buildCalculator(int fastCycle, int slowCycle, int difCycle,int indicatorSetScale) {
+		return new MACDCalculator<>(fastCycle, slowCycle, difCycle,indicatorSetScale);
 	}
 
 	/**
 	 * 计算器
 	 * @author Rootfive
 	 */
-	private static class MACDCalculator extends IndicatorCalculator<MACD> {
-
-		private final IndicatorCalculator<EMA> fastEMAFactor;
-		private final IndicatorCalculator<EMA> slowEMAFactor;
-
-		private final int difDivisor;
-
-		MACDCalculator(int fastCycle, int slowCycle, int difCycle) {
+	private static class MACDCalculator<C extends IndicatorComputeCarrier<?>> extends IndicatorCalculator<C, MACD> {
+		
+		/** 快线平滑系数 设定值为（2/n+1); */
+		private final Double fastEMA_α;
+		/** 慢线平滑系数 设定值为（2/n+1); */
+		private final Double slowEMA_α;
+		/** 离差值(DIF) 平滑系数 设定值为（2/n+1); */
+		private final Double difEMA_α;
+		
+		
+		/** 指标精度 */
+		private final int indicatorSetScale;
+		
+		
+		MACDCalculator(int fastCycle, int slowCycle, int difCycle,int indicatorSetScale) {
 			super(slowCycle, false);
-			this.fastEMAFactor = EMA.buildCalculator(fastCycle);
-			this.slowEMAFactor = EMA.buildCalculator(slowCycle);
-			this.difDivisor = difCycle + 1;
+			this.fastEMA_α = DoubleUtils.divide(2, fastCycle + 1, DoubleUtils.MAX_SCALE);
+			this.slowEMA_α = DoubleUtils.divide(2, slowCycle + 1, DoubleUtils.MAX_SCALE);
+			this.difEMA_α =  DoubleUtils.divide(2, difCycle + 1, DoubleUtils.MAX_SCALE);
+			this.indicatorSetScale =  indicatorSetScale;
 		}
 
 		@Override
-		protected MACD executeCalculate() {
-			IndicatorCalculatorCallback<MACD> current = getHead();
-
-			// 快线EMA
-			Double fastEma = fastEMAFactor.input(new IndicatorCalculatorCallback<EMA>(current)).getValue();
-			// 慢线EMA
-			Double slowEma = slowEMAFactor.input(new IndicatorCalculatorCallback<EMA>(current)).getValue();
-			// 计算离差值(DIF)
-			Double dif = DoubleUtils.setScale(fastEma - slowEma, 2);
-
+		protected MACD executeCalculate(Function<C, MACD> propertyGetter,Consumer<MACD> propertySetter) {
+			C head = getHead();
+			C prev = getPrev();
+			
 			// 前一个计算指数
 			MACD prevMacd = null;
-			IndicatorCalculatorCallback<MACD> prev = getPrev();
-			if (prev != null) {
-				prevMacd = prev.getIndicator();
+			
+			// 快线EMA
+			Double fastEma = null;
+			// 慢线EMA
+			Double slowEma = null; 
+			
+			if (prev == null) {
+				// 快线EMA
+				fastEma =  DoubleUtils.average(DoubleUtils.MAX_SCALE,head.getHigh(),head.getLow(),head.getClose());
+				// 慢线EMA
+				slowEma =  DoubleUtils.average(DoubleUtils.MAX_SCALE,head.getHigh(),head.getLow(),head.getClose());
+			}else {
+				// 当前使用价格
+				Double headClose = head.getClose();
+				
+				prevMacd = propertyGetter.apply(prev);
+				fastEma = EMA.calculateEma(headClose, prevMacd.getFastEma(), fastEMA_α,DoubleUtils.MAX_SCALE);
+				slowEma = EMA.calculateEma(headClose, prevMacd.getSlowEma(), slowEMA_α,DoubleUtils.MAX_SCALE);
 			}
+			
+			// 计算离差值(DIF)
+			Double dif = DoubleUtils.setScale(fastEma - slowEma, indicatorSetScale);
+			
 			// 计算DIF的9日EMA
 			Double dea = null;
 			if (prevMacd == null) {
 				dea = dif;
 			} else {
-				dea = DoubleUtils.setScale(getEma(dif, prevMacd, difDivisor), 2);
+				dea = EMA.calculateEma(dif, prevMacd.getDea(), difEMA_α,indicatorSetScale);
 			}
 
 			/** MACD称为异同移动平均线:表达式MACD=2×（DIF-DEA） */
-			Double macdValue = DoubleUtils.setScale(2 * (dif-dea), 2);
-			
+			Double macdValue = DoubleUtils.setScale(2 * (dif-dea), indicatorSetScale);
 
 			MACD macd = null;
 			if (prevMacd == null) {
@@ -114,20 +138,13 @@ public class MACD extends Indicator {
 				int continueResult = getContinueValue(macdValue, prevMacd.getMacdValue(), prevMacd.getContinueRise());
 				macd = new MACD(fastEma, slowEma, dif, dea, macdValue, continueResult);
 			}
+			
+			//设置计算结果
+			propertySetter.accept(macd);
 			return macd;
 		}
 
-		/**
-		 * 计算EMA
-		 * 
-		 * @param currentUse
-		 * @param prevMacd
-		 * @param divisor
-		 * @return
-		 */
-		private Double getEma(Double currentUse, MACD prevMacd, double divisor) {
-			return DoubleUtils.divide(2 * (currentUse - prevMacd.getDea()), divisor, 2) + prevMacd.getDea();
-		}
+
 	}
 
 }

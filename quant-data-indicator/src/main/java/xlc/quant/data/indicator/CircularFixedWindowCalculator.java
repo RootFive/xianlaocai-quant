@@ -1,10 +1,7 @@
 package xlc.quant.data.indicator;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 
 /**
@@ -13,8 +10,8 @@ import java.util.stream.Collectors;
  * @author Rootfive
  * 
  */
-public abstract class CircularFixedWindowCalculator<T, FWC extends CircularFixedWindowCalculable> {
-
+public abstract class CircularFixedWindowCalculator<FWC extends CircularFixedWindowCalculable<?>,I> {
+	
 	/** 需要计算的数据：指[固定窗口环形数组]中的数据 */
 	protected final transient Object [] circularData;
 
@@ -45,25 +42,27 @@ public abstract class CircularFixedWindowCalculator<T, FWC extends CircularFixed
 	// ==========XXX===================
 	/**
 	 * 执行计算，由子类具体某个指标的计算器实现
-	 * 
+	 * @param propertyGetter  委托方法，上一个载体获取上一个计算结果
+	 * @param propertySetter  委托方法，设置计算结果到载体的哪个属性
 	 * @return
 	 */
-	protected abstract T executeCalculate();
+	protected abstract I executeCalculate(Function<FWC, I> propertyGetter,Consumer<I> propertySetter);
 
 	// ==========XXX===================
 
 	/**
-	 * 输入数据
-	 * @param newFwc 新的固定窗口数据
+	 * @param newFwc         输入新数据
+	 * @param propertyGetter  委托方法，上一个载体获取上一个计算结果
+	 * @param propertySetter  委托方法，设置计算结果到载体的哪个属性
 	 * @return
 	 */
-	public synchronized T input(FWC newFwc) {
+	public synchronized I input(FWC newFwc,Function<FWC, I> propertyGetter,Consumer<I> propertySetter) {
 		boolean addResult = addFirst(newFwc);
 		if (addResult) {
 			// 新增成功
 			if (!isFullCapacityCalculate || (isFullCapacityCalculate && this.isFullCapacity())) {
 				// 1、不是满容计算 [或] 2满容计算且已经满容，二者条件满足其中一种。均可执行计算（指标）
-				return executeCalculate();
+				return executeCalculate(propertyGetter,propertySetter);
 			}
 		}
 		return null;
@@ -73,32 +72,42 @@ public abstract class CircularFixedWindowCalculator<T, FWC extends CircularFixed
 	 * @param newFwc 新的固定窗口数据
 	 * @return 将newFwc追加环形数组的第一个位置（头插法）。
 	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private synchronized boolean addFirst(FWC newFwc) {
 		if (newFwc == null) {
-			throw new NullPointerException("执行器 数据不能为:null");
+			throw new NullPointerException("输入指标计算器 数据不能为:null");
 		}
 
 		// 取出环形数组[head]
 		FWC head = getHead();
 		if (head != null) {
-			// [newFwc]-交易日期时间
-			LocalDateTime newFwcTradeDateTime = newFwc.getTradeDateTime();
-			// [head]-交易日期时间
-			LocalDateTime headTradeDateTime = head.getTradeDateTime();
-
-			if (newFwcTradeDateTime.isBefore(headTradeDateTime)) {
-				// 说明是历史数据，不刷新
+			// [head]-交易时间
+			Comparable headTradeTime = head.getTradeTime();
+			// [newFwc]-交易时间
+			Comparable newFwcTradeTime = newFwc.getTradeTime();
+		
+			if (newFwcTradeTime.compareTo(headTradeTime) <= 0) {
+				// 交易时间【不】在头数据之后，说明是历史数据，不刷新
 				return false;
-			} else if (newFwcTradeDateTime.isAfter(headTradeDateTime)) {
-				++this.executeTotal;
-				// 指针移动-循环数组核心
-				// [newFwc]相较于[head],是一个新的数据，需要刷新 头数据角标
-				if (this.headIndex == (this.circularData.length - 1)) {
-					// 当前[head] 等于 缓冲区长度-1
-					// 说明：此时环形数组的已经满了，环形数组中[head]角标指向数组最后一个空位，要想更新新元素，头元素需要指定数组角标为0的位置
-					this.headIndex = 0;
-				} else {
-					++this.headIndex;
+			} else if (newFwcTradeTime.compareTo(headTradeTime) >  0) {
+				// 交易时间在头数据之后，说明是新数据
+				
+				// [head]-收盘时间
+				Comparable headCloseTime = head.getCloseTime();
+				// [newFwc]-收盘时间
+				Comparable newFwcCloseTime = newFwc.getCloseTime();
+				if (newFwcCloseTime.compareTo(headCloseTime) > 0) {
+					//[newFwcCloseTime]相较于[headCloseTime],是一个新的周期，需要刷新 头数据角标
+					++this.executeTotal;
+					
+					// 指针移动-循环数组核心
+					if (this.headIndex == (this.circularData.length - 1)) {
+						// 当前[head] 等于 缓冲区长度-1
+						// 说明：此时环形数组的已经满了，环形数组中[head]角标指向数组最后一个空位，要想更新新元素，头元素需要指定数组角标为0的位置
+						this.headIndex = 0;
+					} else {
+						++this.headIndex;
+					}
 				}
 			}
 		} else {
@@ -106,10 +115,11 @@ public abstract class CircularFixedWindowCalculator<T, FWC extends CircularFixed
 		}
 		// 设置头数据-不更新元素和元素的角标
 		this.circularData[this.headIndex] = newFwc;
-		//
+		//致辞、数据刷新成功
 		return true;
 	}
 
+	
 	/**
 	 * 尾元素角标
 	 * 
@@ -178,31 +188,6 @@ public abstract class CircularFixedWindowCalculator<T, FWC extends CircularFixed
 	 */
 	public FWC getPrev() {
 		return getPrevByNum(1);
-	}
-
-	/**
-	 * 获取执行器数据-List格式(list按照日期倒叙)
-	 * @param limit
-	 * @return
-	 */
-	public List<FWC> getCalculatorDataList(int limit ) {
-		return getCalculatorDataList().stream().sorted(Comparator.comparing(FWC::getTradeDateTime).reversed()).limit(limit).collect(Collectors.toList());
-	}
-	
-	/**
-	 * 获取执行器数据-List格式(list按照日期倒叙)
-	 */
-	public List<FWC> getCalculatorDataList() {
-		List<FWC> arrayList = new ArrayList<>(circularData.length);
-		
-		for (int i = 0; i < circularData.length; i++) {
-			FWC fwc = getPrevByNum(i);
-			if (fwc != null) {
-				arrayList.set(i, fwc);
-			}
-		}
-		return arrayList;
-//		return arrayList.stream().sorted(Comparator.comparing(FWC::getTradeDateTime).reversed()).collect(Collectors.toList());
 	}
 
 	/**

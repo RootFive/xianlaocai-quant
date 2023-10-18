@@ -1,13 +1,14 @@
 package xlc.quant.data.indicator.calculator;
 
-import java.util.Comparator;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import xlc.quant.data.indicator.Indicator;
 import xlc.quant.data.indicator.IndicatorCalculator;
-import xlc.quant.data.indicator.IndicatorCalculatorCallback;
+import xlc.quant.data.indicator.IndicatorComputeCarrier;
 import xlc.quant.data.indicator.util.DoubleUtils;
 
 
@@ -67,15 +68,16 @@ public class KDJ extends Indicator {
 	 * @param capacity
 	 * @return
 	 */
-	public static IndicatorCalculator<KDJ> buildCalculator(int capacity, int kCycle, int dCycle) {
-		return new KDJCalculator(capacity, kCycle, dCycle);
+	@SuppressWarnings("rawtypes")
+	public static <C extends IndicatorComputeCarrier>  IndicatorCalculator<C, KDJ> buildCalculator(int capacity, int kCycle, int dCycle) {
+		return new KDJCalculator<>(capacity, kCycle, dCycle);
 	}
 
 	/**
 	 * 计算器
 	 * @author Rootfive
 	 */
-	private static class KDJCalculator extends IndicatorCalculator<KDJ> {
+	private static class KDJCalculator<C extends IndicatorComputeCarrier<?>> extends IndicatorCalculator<C, KDJ> {
 		/** K值的计算周期 */
 		private final int kCycle;
 
@@ -94,21 +96,24 @@ public class KDJ extends Indicator {
 		 * Hn为n日内的最高价。 RSV值始终在1—100间波动。
 		 */
 		@Override
-		protected KDJ executeCalculate() {
-			IndicatorCalculatorCallback<KDJ> headData = getHead();
-
+		protected KDJ executeCalculate(Function<C, KDJ> propertyGetter,Consumer<KDJ> propertySetter) {
+			C headData = getHead();
 			// 第收盘价
-			Double valueCn = headData.getClose();
+			double valueCn = headData.getClose();
 			// Hn为n日内的最高价
-			Double valueHn = super.getCalculatorDataList().stream().max(Comparator.comparing(IndicatorCalculatorCallback::getHigh)).get().getHigh();
+			double valueHn = headData.getHigh();
 			// Ln为n日内的最低价
-			Double valueLn = super.getCalculatorDataList().stream().min(Comparator.comparing(IndicatorCalculatorCallback::getLow)).get().getLow();
-					
-
+			double valueLn = headData.getLow();
+			for (int i = 0; i < circularData.length; i++) {
+				C callback = getPrevByNum(i);
+				valueHn = Math.max(valueHn, callback.getHigh());
+				valueLn = Math.min(valueLn, callback.getLow());
+			}
+			
 			// 计算公式为：n日RSV=（Cn－Ln）÷（Hn－Ln）×100,四舍五入，保留4位小数
 //			BigDecimal rsvValue = (valueCn.subtract(valueLn)).divide((valueHn.subtract(valueLn)), 4, RoundingMode.HALF_UP).multiply(HUNDRED);
 			Double rsvValue =null;
-			if (valueHn.compareTo(valueLn) == 0) {
+			if (valueHn == valueLn) {
 				//连续横盘的极端情况valueHn=valueLn
 				rsvValue=DoubleUtils.ZERO;
 			}else {
@@ -119,13 +124,13 @@ public class KDJ extends Indicator {
 			 * 计算K值: 当日K值=2/3×前一日K值＋1/3×当日RSV 计算D值： 当日D值=2/3×前一日D值＋1/3×当日K值 计算J值：
 			 * 当日J值=3*当日K值-2*当日D值 【注意】若无前一日K 值与D值，则可分别用50（1-100的中间值）来代替。
 			 */
-			IndicatorCalculatorCallback<KDJ> prev = getPrev();
+			C prev = getPrev();
 
 			// 前一个交易统计的KDJ
 			KDJ prevKdj = null;
 			if (prev != null) {
 				// 前一个交易统计的KDJ
-				prevKdj = prev.getIndicator();
+				prevKdj = propertyGetter.apply(prev);
 			}
 			if (prevKdj == null) {
 				// prevK 为空，取默认值 50
@@ -156,7 +161,11 @@ public class KDJ extends Indicator {
 			Double headK = DoubleUtils.setScale(kValue,2);
 			Double headD = DoubleUtils.setScale(dValue,2);
 			Double headJ = DoubleUtils.setScale(jValue,2);
-			return new KDJ(headK, headD, headJ);
+			
+			KDJ kdj = new KDJ(headK, headD, headJ);
+			//设置计算结果
+			propertySetter.accept(kdj);
+			return kdj;
 		}
 
 	}

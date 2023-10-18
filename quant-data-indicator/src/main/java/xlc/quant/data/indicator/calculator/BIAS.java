@@ -1,12 +1,13 @@
 package xlc.quant.data.indicator.calculator;
 
-import lombok.AllArgsConstructor;
+import java.util.function.Consumer;
+import java.util.function.Function;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
 import xlc.quant.data.indicator.Indicator;
 import xlc.quant.data.indicator.IndicatorCalculator;
-import xlc.quant.data.indicator.IndicatorCalculatorCallback;
+import xlc.quant.data.indicator.IndicatorComputeCarrier;
 import xlc.quant.data.indicator.util.DoubleUtils;
 
 /**
@@ -24,13 +25,8 @@ import xlc.quant.data.indicator.util.DoubleUtils;
 * 72日平均值乖离：－11%是买进时机，+11%是卖出时机
 */
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class BIAS extends Indicator {
-
-	private Double value;
-
 	//=============
 	//内部类分隔符 XXX
 	//=============
@@ -40,8 +36,9 @@ public class BIAS extends Indicator {
 	 * @param capacity
 	 * @return
 	 */
-	public static IndicatorCalculator<BIAS> buildCalculator(int capacity) {
-		return new BIASCalculator(capacity);
+	@SuppressWarnings("rawtypes")
+	public static <C extends IndicatorComputeCarrier> IndicatorCalculator<C,Double> buildCalculator(int capacity) {
+		return new BIASCalculator<>(capacity);
 	}
 
 	/**
@@ -49,7 +46,7 @@ public class BIAS extends Indicator {
 	 * 
 	 * @author Rootfive
 	 */
-	private static class BIASCalculator extends IndicatorCalculator<BIAS> {
+	private static class BIASCalculator<C extends IndicatorComputeCarrier<?>> extends IndicatorCalculator<C,Double> {
 
 		/**
 		 * @param capacity
@@ -59,21 +56,22 @@ public class BIAS extends Indicator {
 		}
 
 		@Override
-		protected BIAS executeCalculate() {
-			IndicatorCalculatorCallback<BIAS> head = getHead();
+		protected Double executeCalculate(Function<C, Double> propertyGetter,Consumer<Double> propertySetter) {
+			C head = getHead();
 			// 当前使用价格
-			Double currentUsePrice = null;
-			// 缓冲区内所有 平均值
-			Double ma = null;
-			if (isFullCapacity()) {
-				currentUsePrice = head.getClose();
-				Double sumValue = super.getCalculatorDataList().stream().mapToDouble(IndicatorCalculatorCallback::getClose).sum();
-				ma = DoubleUtils.divide(sumValue, fwcPeriod, 2);
+			double currentUsePrice = head.getClose();
+			double sumValue = DoubleUtils.ZERO;
+			for (int i = 0; i < circularData.length; i++) {
+				sumValue = sumValue+getPrevByNum(i).getClose();
 			}
-			
+			// 缓冲区内所有 平均值
+			Double ma = DoubleUtils.divide(sumValue, fwcPeriod, DoubleUtils.MAX_SCALE);
 			// 计算公式：BIAS 乖离率=（当日收盘价-N日内移动平均价）/N日内移动平均价╳100%
-			Double biasValue = DoubleUtils.divideByPct(currentUsePrice-ma, ma);
-			return new BIAS(biasValue);
+			double biasValue = DoubleUtils.divideByPct(currentUsePrice-ma, ma);
+			
+			//设置计算结果
+			propertySetter.accept(biasValue);
+			return biasValue;
 		}
 	}
 

@@ -1,11 +1,14 @@
 package xlc.quant.data.indicator.calculator;
 
+import java.util.function.Consumer;
+import java.util.function.Function;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import xlc.quant.data.indicator.Indicator;
 import xlc.quant.data.indicator.IndicatorCalculator;
-import xlc.quant.data.indicator.IndicatorCalculatorCallback;
+import xlc.quant.data.indicator.IndicatorComputeCarrier;
 import xlc.quant.data.indicator.util.DoubleUtils;
 
 /**
@@ -54,58 +57,74 @@ public class CCI extends Indicator {
 	//=============
 	/**
 	 * @param capacity
+	 * @param indicatorSetScale        指标精度
+	 * @param assistIndicatorSetScale  辅助指标精度
 	 * @return
 	 */
-	public static IndicatorCalculator<CCI> buildCalculator(int capacity) {
-		return new CCICalculator(capacity);
+	@SuppressWarnings("rawtypes")
+	public static <C extends IndicatorComputeCarrier> IndicatorCalculator<C, CCI> buildCalculator(int capacity,int indicatorSetScale) {
+		return new CCICalculator<>(capacity, indicatorSetScale);
 	}
 
 	/**
 	 * 计算器
 	 * @author Rootfive
 	 */
-	private static class CCICalculator extends IndicatorCalculator<CCI> {
+	private static class CCICalculator<C extends IndicatorComputeCarrier<?>> extends IndicatorCalculator<C, CCI> {
 
 		/** 
 		 * 偏离系数（Multiplier）：CCI指标的计算中，常用的偏离系数为0.015。
 		 * 该系数用于调整CCI指标的灵敏度，可以根据需要进行微调。 
 		 */
 		private static final Double multiplier = 0.015D;
+		
+		/** 指标精度 */
+		private final int indicatorSetScale;
 
 		/**
 		 * @param capacity
 		 */
-		public CCICalculator(int capacity) {
+		CCICalculator(int capacity,int indicatorSetScale) {
 			super(capacity, false);
+			this.indicatorSetScale =  indicatorSetScale;
 		}
 
 		@Override
-		protected CCI executeCalculate() {
-			IndicatorCalculatorCallback<CCI> head = getHead();
-//			BigDecimal TP = divide((head.getHigh().add(head.getLow()).add(head.getClose())),INT_3, 4);
-			Double TP = DoubleUtils.mean(4,head.getHigh(),head.getLow(),head.getClose());
+		protected CCI executeCalculate(Function<C, CCI> propertyGetter,Consumer<CCI> propertySetter) {
+			C head = getHead();
+			Double TP = DoubleUtils.average(DoubleUtils.MAX_SCALE,head.getHigh(),head.getLow(),head.getClose());
 			if (!isFullCapacity()) {
 				return new CCI(TP);
 			}
+			
+			
 			Double tpSumValueForMD = TP;
-			for (IndicatorCalculatorCallback<CCI> indicatorCarrier : super.getCalculatorDataList()) {
-				CCI cci = indicatorCarrier.getIndicator();
+			for (int i = 0; i < circularData.length; i++) {
+				C indicatorCarrier = getPrevByNum(i);
+				CCI cci = propertyGetter.apply(indicatorCarrier);
 				if (cci !=null) {
 					tpSumValueForMD = tpSumValueForMD + cci.getTp();
 				}
 			}
-					
-			Double MA = DoubleUtils.divide(tpSumValueForMD, fwcPeriod, 4);
+			Double MA = DoubleUtils.divide(tpSumValueForMD, fwcPeriod, DoubleUtils.MAX_SCALE);
+			
+			
 			Double sumValueForMD = DoubleUtils.ZERO;
-			for (IndicatorCalculatorCallback<CCI> calculator : super.getCalculatorDataList()) {
+			for (int i = 0; i < circularData.length; i++) {
+				C calculator = getPrevByNum(i);
 
-				CCI cci = calculator.getIndicator();
+				CCI cci = propertyGetter.apply(calculator);
 				Double tp = cci !=null ?cci.getTp():TP;
 				sumValueForMD = sumValueForMD + Math.abs(MA -tp);
 			}
-			Double MD = DoubleUtils.divide(sumValueForMD, fwcPeriod, 4);
-			Double cciValue = DoubleUtils.divide(DoubleUtils.divide(TP-MA, MD, 4), multiplier, 2);
-			return new CCI(TP, cciValue);
+			Double MD = DoubleUtils.divide(sumValueForMD, fwcPeriod, DoubleUtils.MAX_SCALE);
+			
+			
+			Double cciValue = DoubleUtils.divide(DoubleUtils.divide(TP-MA, MD, DoubleUtils.MAX_SCALE), multiplier, indicatorSetScale);
+			CCI cci = new CCI(TP, cciValue);
+			//设置计算结果
+			propertySetter.accept(cci);
+			return cci;
 		}
 
 	}

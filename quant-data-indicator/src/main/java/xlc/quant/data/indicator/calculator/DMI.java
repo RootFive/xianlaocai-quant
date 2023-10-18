@@ -1,11 +1,14 @@
 package xlc.quant.data.indicator.calculator;
 
+import java.util.function.Consumer;
+import java.util.function.Function;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import xlc.quant.data.indicator.Indicator;
 import xlc.quant.data.indicator.IndicatorCalculator;
-import xlc.quant.data.indicator.IndicatorCalculatorCallback;
+import xlc.quant.data.indicator.IndicatorComputeCarrier;
 import xlc.quant.data.indicator.util.DoubleUtils;
 
 @Data
@@ -58,15 +61,17 @@ public class DMI extends Indicator {
 	 * @param adxPeriod
 	 * @return
 	 */
-	public static IndicatorCalculator<DMI> buildCalculator(int diPeriod, int adxPeriod) {
-		return new DMICalculator(diPeriod, adxPeriod);
+	@SuppressWarnings("rawtypes")
+	public static <C extends IndicatorComputeCarrier> IndicatorCalculator<C, DMI> buildCalculator(int diPeriod, int adxPeriod) {
+		return new DMICalculator<>(diPeriod, adxPeriod);
 	}
+	
 
 	/**
 	 * 内部类实现DMI计算器
 	 * @author Rootfive
 	 */
-	private static class DMICalculator extends IndicatorCalculator<DMI> {
+	private static class DMICalculator<C extends IndicatorComputeCarrier<?>> extends IndicatorCalculator<C, DMI> {
 		
 		/** 趋向周期 */
 		private final int adxPeriod;
@@ -85,9 +90,9 @@ public class DMI extends Indicator {
 		 *  百度百科：https://baike.baidu.com/item/DMI%E6%8C%87%E6%A0%87/3423254#4
 		 */
 		@Override
-		protected DMI executeCalculate() {
-			IndicatorCalculatorCallback<DMI> prev = getPrev();
-			IndicatorCalculatorCallback<DMI> head = getHead();
+		protected DMI executeCalculate(Function<C, DMI> propertyGetter,Consumer<DMI> propertySetter) {
+			C prev = getPrev();
+			C head = getHead();
 
 			Double tr = null;
 			Double dmp = null;
@@ -116,14 +121,19 @@ public class DMI extends Indicator {
 				}
 			}
 
-			DMI dmi = new DMI(tr, dmp, dmm);
-			getHead().setIndicator(dmi);
-		
+			DMI dmiHead = new DMI(tr, dmp, dmm);
 			
-			Double trSum = super.getCalculatorDataList().stream().map(IndicatorCalculatorCallback::getIndicator).mapToDouble(DMI::getTr).sum();
-			Double dmpSum = super.getCalculatorDataList().stream().map(IndicatorCalculatorCallback::getIndicator).mapToDouble(DMI::getDmp).sum();
-			Double dmmSum = super.getCalculatorDataList().stream().map(IndicatorCalculatorCallback::getIndicator).mapToDouble(DMI::getDmm).sum();
-					
+			double trSum = dmiHead.getTr();
+			double dmpSum = dmiHead.getDmp();
+			double dmmSum = dmiHead.getDmm();
+			
+			for (int i = 1; i < circularData.length; i++) {
+				DMI dmi_i = propertyGetter.apply(getPrevByNum(i));
+				
+				trSum= trSum+dmi_i.getTr();
+				dmpSum= dmpSum+dmi_i.getDmp();
+				dmmSum= dmmSum+dmi_i.getDmm();
+			}
 
 			Double dip = null;
 			Double dim = null;
@@ -135,41 +145,44 @@ public class DMI extends Indicator {
 				dip = DoubleUtils.divideByPct(dmpSum, trSum);
 				dim = DoubleUtils.divideByPct(dmmSum, trSum);
 			}
-			dmi.setDip(dip);
-			dmi.setDim(dim);
+			dmiHead.setDip(dip);
+			dmiHead.setDim(dim);
 
 			//依据DI值可以计算出DX指标值。其计算方法是将+DI和—DI间的差的绝对值除以总和的百分比得到动向指数DX
 			Double diDiff = Math.abs(dip-dim);
 			Double diSum = dip+dim;
-			Double dx = DoubleUtils.ZERO;
+			double dx = DoubleUtils.ZERO;
 			if (diSum > DoubleUtils.ZERO) {
 				dx = DoubleUtils.divideByPct(diDiff, diSum);
 			}
 			
-			dmi.setDx(dx);
+			dmiHead.setDx(dx);
 
 			if (executeTotal <= adxPeriod) {
-				return dmi;
+				//设置计算结果
+				propertySetter.accept(dmiHead);
+				return dmiHead;
 			}
 			
-			Double adx = null;
-			Double dxSum = super.getCalculatorDataList(adxPeriod).stream().map(IndicatorCalculatorCallback::getIndicator).mapToDouble(DMI::getDx).sum();
-			adx = DoubleUtils.divide(dxSum, adxPeriod, 2);
-			
-			if (isFullCapacity()) {
-			
+			double dxSum =  dmiHead.getDx();
+			for (int i = 1; i < adxPeriod; i++) {
+				DMI dmi_i = propertyGetter.apply(getPrevByNum(i));
+				dxSum = dxSum+dmi_i.getDx();
 			}
-			dmi.setAdx(adx);
+			
+			Double adx = DoubleUtils.divide(dxSum, adxPeriod, 2);
+			dmiHead.setAdx(adx);
 
 			Double adxr = null;
-			Double adxByPrevAdxPeriod = getPrevByNum(adxPeriod).getIndicator().getAdx();
+			Double adxByPrevAdxPeriod = propertyGetter.apply(getPrevByNum(adxPeriod)).getAdx();
 			if (adxByPrevAdxPeriod != null) {
 				adxr = DoubleUtils.divide(adx+adxByPrevAdxPeriod, 2, 2);
-				DoubleUtils.mean(2, adx,adxByPrevAdxPeriod);
 			}
-			dmi.setAdxr(adxr);
-
-			return dmi;
+			
+			dmiHead.setAdxr(adxr);
+			//设置计算结果
+			propertySetter.accept(dmiHead);
+			return dmiHead;
 		}
 	}
 

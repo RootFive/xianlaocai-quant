@@ -1,12 +1,13 @@
 package xlc.quant.data.indicator.calculator;
 
-import lombok.AllArgsConstructor;
+import java.util.function.Consumer;
+import java.util.function.Function;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
 import xlc.quant.data.indicator.Indicator;
 import xlc.quant.data.indicator.IndicatorCalculator;
-import xlc.quant.data.indicator.IndicatorCalculatorCallback;
+import xlc.quant.data.indicator.IndicatorComputeCarrier;
 import xlc.quant.data.indicator.util.DoubleUtils;
 
 /**
@@ -23,14 +24,8 @@ import xlc.quant.data.indicator.util.DoubleUtils;
  *    用EMA追底，用MA识顶。 例如，用20天EMA判断底部，用20天MA判断顶部。
  */
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class MA extends Indicator {
-
-	/** MA计算值  */
-	private Double value;
-
 	
 	//=============
 	//内部类分隔符 XXX
@@ -38,34 +33,41 @@ public class MA extends Indicator {
 	/**
 	 * 构建-计算器
 	 * @param capacity
+	 * @param indicatorSetScale        指标精度
 	 * @return
 	 */
-	public static IndicatorCalculator<MA> buildCalculator(int capacity) {
-		return new MACalculator(capacity);
+	@SuppressWarnings("rawtypes")
+	public static <C extends IndicatorComputeCarrier>  IndicatorCalculator<C, Double> buildCalculator(int capacity,int indicatorSetScale) {
+		return new MACalculator<>(capacity,indicatorSetScale);
 	}
 
 	/**
 	 * 内部类实现MA计算器
 	 * @author Rootfive
 	 */
-	private static class MACalculator extends IndicatorCalculator<MA> {
-
+	private static class MACalculator<C extends IndicatorComputeCarrier<?>>  extends IndicatorCalculator<C, Double> {
+		/** 指标精度 */
+		private final int indicatorSetScale;
+		
 		/**
 		 * @param capacity
 		 */
-		MACalculator(int capacity) {
+		MACalculator(int capacity,int indicatorSetScale) {
 			super(capacity, true);
+			this.indicatorSetScale =  indicatorSetScale;
 		}
 
 		@Override
-		protected MA executeCalculate() {
-			Double maValue = null;
-			if (isFullCapacity()) {
-				double closeSumValue = super.getCalculatorDataList().stream().mapToDouble(IndicatorCalculatorCallback::getClose).sum();
-				maValue = DoubleUtils.divide(closeSumValue, fwcPeriod, 2);
-				return new MA(maValue);
+		protected Double executeCalculate(Function<C, Double> propertyGetter,Consumer<Double> propertySetter) {
+			double closeSumValue = DoubleUtils.ZERO;
+			for (int i = 0; i < circularData.length; i++) {
+				closeSumValue = closeSumValue+ getPrevByNum(i).getClose();
 			}
-			return null;
+			
+			double maValue = DoubleUtils.divide(closeSumValue, fwcPeriod, indicatorSetScale);
+			//设置计算结果
+			propertySetter.accept(maValue);
+			return maValue;
 		}
 
 	}

@@ -1,11 +1,14 @@
 package xlc.quant.data.indicator.calculator;
 
+import java.util.function.Consumer;
+import java.util.function.Function;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import xlc.quant.data.indicator.Indicator;
 import xlc.quant.data.indicator.IndicatorCalculator;
-import xlc.quant.data.indicator.IndicatorCalculatorCallback;
+import xlc.quant.data.indicator.IndicatorComputeCarrier;
 import xlc.quant.data.indicator.util.DoubleUtils;
 
 /**
@@ -58,34 +61,28 @@ public class BOLL extends Indicator {
 	 * @param capacity
 	 * @param k
 	 * @param indicatorSetScale        指标精度
-	 * @param assistIndicatorSetScale  辅助指标精度
 	 * @return
 	 */
-	public static IndicatorCalculator<BOLL> buildCalculator(int capacity, double k,int indicatorSetScale,int assistIndicatorSetScale) {
-		return new BOLLCalculator(capacity, k, indicatorSetScale, assistIndicatorSetScale);
+	@SuppressWarnings("rawtypes")
+	public static <C extends IndicatorComputeCarrier> IndicatorCalculator<C,BOLL> buildCalculator(int capacity, double k,int indicatorSetScale) {
+		return new BOLLCalculator<>(capacity, k, indicatorSetScale);
 	}
 
 	/**
 	 * BOLL计算器
 	 * @author Rootfive
 	 */
-	private static class BOLLCalculator extends IndicatorCalculator<BOLL> {
+	private static class BOLLCalculator<C extends IndicatorComputeCarrier<?>> extends IndicatorCalculator<C,BOLL> {
 		/** K为参数，可根据股票的特性来做相应的调整，一般默认为2 */
 		private static final double DEFAULT_K = 2;
 		/** 布林线指标的参数N,指的是K线的个数,默认20 */
 		private static final int DEFAULT_PERIOD = 20;
 		
-		
-		/** MA计算器  */
-		private final IndicatorCalculator<MA> maCalculator;
-
 		/** K为参数，可根据股票的特性来做相应的调整，一般默认为2 */
 		private final Double k;
 		
 		/** 指标精度 */
 		private final int indicatorSetScale;
-		/** 辅助指标精度 */
-		private final int assistIndicatorSetScale;
 
 		/**
 		 * 各大股票交易软件默认N是20，所以MB等于当日20日均线值，（K为参数，可根据股票的特性来做相应的调整，一般默认为2）
@@ -93,51 +90,56 @@ public class BOLL extends Indicator {
 		 * @param period 布林线指标的参数N,指的是K线的个数,默认20
 		 * @param k        K为参数，可根据股票的特性来做相应的调整，一般默认为2
 		 * @param indicatorSetScale        指标精度
-		 * @param assistIndicatorSetScale  辅助指标精度
 		 */
-		BOLLCalculator(int period, double k,int indicatorSetScale,int assistIndicatorSetScale) {
-			super((period <= 0 ? DEFAULT_PERIOD : period), false);
-			this.maCalculator = MA.buildCalculator(period <= 0 ? DEFAULT_PERIOD : period);
+		BOLLCalculator(int period, double k,int indicatorSetScale) {
+			super((period <= 0 ? DEFAULT_PERIOD : period), true);
 			this.k =  k <= 0 ? DEFAULT_K : k;
 			this.indicatorSetScale =  indicatorSetScale;
-			this.assistIndicatorSetScale =  assistIndicatorSetScale;
 		}
 
 		@Override
-		protected BOLL executeCalculate() {
-			IndicatorCalculatorCallback<BOLL> head = getHead();
+		protected BOLL executeCalculate(Function<C, BOLL> propertyGetter,Consumer<BOLL> propertySetter) {
+			C head = getHead();
 			// 1）计算MA: MA=N日内的收盘价之和÷N
 
+			// 求收盘价 平均值
+			double sumClose = head.getClose();
+			for (int i = 1; i < circularData.length; i++) {
+				sumClose =  sumClose+ getPrevByNum(i).getClose();
+			}
 			// 收盘价 平均值
-			MA MA = maCalculator.input(new IndicatorCalculatorCallback<MA>(head));
+			Double closeMA = sumClose/circularData.length;
+			
 			// BOLL线
 			if (!isFullCapacity()) {
 				return null;
 			}
-			Double maValue = MA.getValue();
 
 			// 2）计算标准差MD MD=平方根（N-1）日的（C－MA）的两次方之和除以N
 			// 2.1 计算方差
 			Double varianceS2 = DoubleUtils.ZERO;
-			for (IndicatorCalculatorCallback<BOLL> m : super.getCalculatorDataList()) {
+			
+			for (int i = 0; i < circularData.length; i++) {
+				C m = getPrevByNum(i);
 				// 差值
-				Double DValue = m.getClose() -MA.getValue();
+				Double DValue = m.getClose() -closeMA;
 				// 差值的平方只和
 				varianceS2 = varianceS2 + DValue * DValue;
 			}
+			
 			// 方差
-			Double variance = DoubleUtils.divide(varianceS2,fwcPeriod, assistIndicatorSetScale);
+			Double variance = DoubleUtils.divide(varianceS2,fwcPeriod, DoubleUtils.MAX_SCALE);
 			// 标准差
 			Double MD = Math.sqrt(variance);
 
 			/*
 			 * （K为参数，可根据股票的特性来做相应的调整，一般默认为2） MB=N日的MA UP=MB+k×MD DN=MB－k×MD
 			 */
-			Double MB = DoubleUtils.setScale(maValue, indicatorSetScale);
+			Double MB = DoubleUtils.setScale(closeMA, indicatorSetScale);
 			Double UP = DoubleUtils.setScale(MB+k * MD, indicatorSetScale);
 			Double DN = DoubleUtils.setScale(MB-k * MD, indicatorSetScale);
-
-			BOLL prevBoll = getPrev().getIndicator();
+			
+			BOLL prevBoll = propertyGetter.apply(getPrev());
 			BOLL boll = null;
 			if (prevBoll == null) {
 				boll = new BOLL(UP, MB, DN, 0);
@@ -146,6 +148,9 @@ public class BOLL extends Indicator {
 				Integer bollContinueExpand = getContinueValue(UP - DN,prevBoll.getU()- prevBoll.getD(), prevBoll.getContinueExpand());
 				boll = new BOLL(UP, MB, DN, bollContinueExpand);
 			}
+			
+			//设置计算结果
+			propertySetter.accept(boll);
 			return boll;
 		}
 
