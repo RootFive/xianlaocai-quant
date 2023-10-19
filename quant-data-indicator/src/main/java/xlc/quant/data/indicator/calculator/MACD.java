@@ -59,8 +59,7 @@ public class MACD extends Indicator {
 	 * @param difCycle
 	 * @return
 	 */
-	@SuppressWarnings("rawtypes")
-	public static <C extends IndicatorComputeCarrier> IndicatorCalculator<C, MACD> buildCalculator(int fastCycle, int slowCycle, int difCycle,int indicatorSetScale) {
+	public static <C extends IndicatorComputeCarrier<?>> IndicatorCalculator<C, MACD> buildCalculator(int fastCycle, int slowCycle, int difCycle,int indicatorSetScale) {
 		return new MACDCalculator<>(fastCycle, slowCycle, difCycle,indicatorSetScale);
 	}
 

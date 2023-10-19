@@ -34,7 +34,7 @@ mvnrepository地址（更新较慢）：https://mvnrepository.com/artifact/com.x
 	<dependency>
 		<groupId>com.xianlaocai.quant</groupId>
 		<artifactId>quant-data-indicator</artifactId>
-		<version>XLCQ20231018</version>
+		<version>XLCQ20231019</version>
 	</dependency>
 ```
 
@@ -43,7 +43,7 @@ Gradle
 
 ```xml
 // https://mvnrepository.com/artifact/com.xianlaocai.quant/quant-data-indicator
-implementation group: 'com.xianlaocai.quant', name: 'quant-data-indicator', version: 'XLCQ20231018'
+implementation group: 'com.xianlaocai.quant', name: 'quant-data-indicator', version: 'XLCQ20231019'
 
 ```
 ### 基表计算示例 
@@ -358,8 +358,7 @@ public class MA extends Indicator {
 	 * @param indicatorSetScale        指标精度
 	 * @return
 	 */
-	@SuppressWarnings("rawtypes")
-	public static <C extends IndicatorComputeCarrier>  IndicatorCalculator<C, Double> buildCalculator(int capacity,int indicatorSetScale) {
+	public static <C extends IndicatorComputeCarrier<?>>  IndicatorCalculator<C, Double> buildCalculator(int capacity,int indicatorSetScale) {
 		return new MACalculator<>(capacity,indicatorSetScale);
 	}
 

@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>com.xianlaocai.quant</groupId>
 		<artifactId>xianlaocai-quant</artifactId>
-		<version>XLCQ20231018</version>
+		<version>XLCQ20231019</version>
 	</parent>
 	<artifactId>quant-data-indicator</artifactId>
 	<name>quant-data-indicator</name>

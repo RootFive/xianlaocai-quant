@@ -44,8 +44,7 @@ public class WR extends Indicator {
 	 * @param capacity
 	 * @return
 	 */
-	@SuppressWarnings("rawtypes")
-	public static <C extends IndicatorComputeCarrier> IndicatorCalculator<C, Double> buildCalculator(int capacity) {
+	public static <C extends IndicatorComputeCarrier<?>> IndicatorCalculator<C, Double> buildCalculator(int capacity) {
 		return new WRIndicatorCalculateExecutor<>(capacity);
 	}
 

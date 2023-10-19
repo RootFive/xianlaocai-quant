@@ -39,8 +39,7 @@ public class EMA extends Indicator {
 	 * @param capacity
 	 * @return
 	 */
-	@SuppressWarnings("rawtypes")
-	public static <C extends IndicatorComputeCarrier>   IndicatorCalculator<C, Double> buildCalculator(int capacity,int indicatorSetScale) {
+	public static <C extends IndicatorComputeCarrier<?>>   IndicatorCalculator<C, Double> buildCalculator(int capacity,int indicatorSetScale) {
 		return new EMACalculator<>(capacity,indicatorSetScale);
 	}
 

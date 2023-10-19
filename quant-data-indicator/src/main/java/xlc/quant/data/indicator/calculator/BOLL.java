@@ -63,8 +63,7 @@ public class BOLL extends Indicator {
 	 * @param indicatorSetScale        指标精度
 	 * @return
 	 */
-	@SuppressWarnings("rawtypes")
-	public static <C extends IndicatorComputeCarrier> IndicatorCalculator<C,BOLL> buildCalculator(int capacity, double k,int indicatorSetScale) {
+	public static <C extends IndicatorComputeCarrier<?>> IndicatorCalculator<C,BOLL> buildCalculator(int capacity, double k,int indicatorSetScale) {
 		return new BOLLCalculator<>(capacity, k, indicatorSetScale);
 	}
 

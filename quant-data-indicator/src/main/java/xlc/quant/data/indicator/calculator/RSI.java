@@ -62,8 +62,7 @@ public class RSI extends Indicator {
 	 * @param capacity
 	 * @return
 	 */
-	@SuppressWarnings("rawtypes")
-	public static <C extends IndicatorComputeCarrier> IndicatorCalculator<C, RSI> buildCalculator(int capacity) {
+	public static <C extends IndicatorComputeCarrier<?>> IndicatorCalculator<C, RSI> buildCalculator(int capacity) {
 		return new RSICalculator<>(capacity);
 	}
 

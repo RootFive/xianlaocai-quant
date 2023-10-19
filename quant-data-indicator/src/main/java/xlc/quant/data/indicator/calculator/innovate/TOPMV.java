@@ -50,8 +50,7 @@ public class TOPMV extends Indicator {
 	 * @param indicatorVolumeSetScale  指标Volume精度
 	 * @return
 	 */
-	@SuppressWarnings("rawtypes")
-	public static <C extends IndicatorComputeCarrier> IndicatorCalculator<C, TOPMV> buildCalculator(int capacity, int top,int indicatorAmountSetScale,int indicatorVolumeSetScale) {
+	public static <C extends IndicatorComputeCarrier<?>> IndicatorCalculator<C, TOPMV> buildCalculator(int capacity, int top,int indicatorAmountSetScale,int indicatorVolumeSetScale) {
 		return  new TOPMVCalculator<>(capacity,  top, indicatorAmountSetScale, indicatorVolumeSetScale);
     }
 

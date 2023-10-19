@@ -36,8 +36,7 @@ public class MA extends Indicator {
 	 * @param indicatorSetScale        指标精度
 	 * @return
 	 */
-	@SuppressWarnings("rawtypes")
-	public static <C extends IndicatorComputeCarrier>  IndicatorCalculator<C, Double> buildCalculator(int capacity,int indicatorSetScale) {
+	public static <C extends IndicatorComputeCarrier<?>>  IndicatorCalculator<C, Double> buildCalculator(int capacity,int indicatorSetScale) {
 		return new MACalculator<>(capacity,indicatorSetScale);
 	}
 

@@ -61,8 +61,7 @@ public class DMI extends Indicator {
 	 * @param adxPeriod
 	 * @return
 	 */
-	@SuppressWarnings("rawtypes")
-	public static <C extends IndicatorComputeCarrier> IndicatorCalculator<C, DMI> buildCalculator(int diPeriod, int adxPeriod) {
+	public static <C extends IndicatorComputeCarrier<?>> IndicatorCalculator<C, DMI> buildCalculator(int diPeriod, int adxPeriod) {
 		return new DMICalculator<>(diPeriod, adxPeriod);
 	}
 	

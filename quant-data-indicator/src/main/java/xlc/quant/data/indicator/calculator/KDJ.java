@@ -68,8 +68,7 @@ public class KDJ extends Indicator {
 	 * @param capacity
 	 * @return
 	 */
-	@SuppressWarnings("rawtypes")
-	public static <C extends IndicatorComputeCarrier>  IndicatorCalculator<C, KDJ> buildCalculator(int capacity, int kCycle, int dCycle) {
+	public static <C extends IndicatorComputeCarrier<?>>  IndicatorCalculator<C, KDJ> buildCalculator(int capacity, int kCycle, int dCycle) {
 		return new KDJCalculator<>(capacity, kCycle, dCycle);
 	}
 

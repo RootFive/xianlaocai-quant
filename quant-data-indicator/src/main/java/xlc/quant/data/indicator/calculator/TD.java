@@ -31,8 +31,7 @@ public class TD extends Indicator {
 	 * @param capacity
 	 * @return
 	 */
-	@SuppressWarnings("rawtypes")
-	public static <C extends IndicatorComputeCarrier> IndicatorCalculator<C, Integer> buildCalculator(int capacity, int moveSize) {
+	public static <C extends IndicatorComputeCarrier<?>> IndicatorCalculator<C, Integer> buildCalculator(int capacity, int moveSize) {
 		return new TDCalculator<>(capacity, moveSize);
 	}
 

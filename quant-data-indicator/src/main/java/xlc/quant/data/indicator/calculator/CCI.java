@@ -61,8 +61,7 @@ public class CCI extends Indicator {
 	 * @param assistIndicatorSetScale  辅助指标精度
 	 * @return
 	 */
-	@SuppressWarnings("rawtypes")
-	public static <C extends IndicatorComputeCarrier> IndicatorCalculator<C, CCI> buildCalculator(int capacity,int indicatorSetScale) {
+	public static <C extends IndicatorComputeCarrier<?>> IndicatorCalculator<C, CCI> buildCalculator(int capacity,int indicatorSetScale) {
 		return new CCICalculator<>(capacity, indicatorSetScale);
 	}
 
