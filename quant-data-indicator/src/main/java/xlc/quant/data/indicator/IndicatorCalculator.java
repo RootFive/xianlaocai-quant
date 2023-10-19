@@ -1,18 +1,20 @@
 package xlc.quant.data.indicator;
 
 /**
- * 指标计算 计算器
- * 
+ * 指标计算计算器(抽象父类)
  * @author Rootfive
- * 
+ * @param <CARRIER>  计算指标的载体
+ * @param <INDI>     根据载体计算出的指标
  */
-public abstract  class IndicatorCalculator<C extends IndicatorComputeCarrier<?>,I>  extends  CircularFixedWindowCalculator<C,I> {
+public abstract class IndicatorCalculator<CARRIER extends IndicatorComputeCarrier<?>, INDI> 	extends FixedWindowCircularCalculator<CARRIER, INDI> {
 
-	public IndicatorCalculator(int period, boolean isFullCapacityCalculate) {
-		super(period,  isFullCapacityCalculate);
+	/**
+	 * @param maxPeriod   	最大周期			
+	 * @param isFullCapacityCalculate  是否满容计算
+	 */
+	public IndicatorCalculator(int maxPeriod, boolean isFullCapacityCalculate) {
+		super(maxPeriod, isFullCapacityCalculate);
 	}
-
-	// ==========XXX===================
 
 	/**
 	 * @param current  当前值
@@ -24,11 +26,11 @@ public abstract  class IndicatorCalculator<C extends IndicatorComputeCarrier<?>,
 		if (current == null || prev == null) {
 			return 0;
 		}
-		
+
 		if (preContinueValue == null) {
 			preContinueValue = 0;
 		}
-		
+
 		int compareResult = current.compareTo(prev);
 		switch (compareResult) {
 		case 1:

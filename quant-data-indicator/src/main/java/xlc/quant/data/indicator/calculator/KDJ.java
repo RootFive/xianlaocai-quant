@@ -1,6 +1,5 @@
 package xlc.quant.data.indicator.calculator;
 
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 import lombok.Data;
@@ -15,7 +14,7 @@ import xlc.quant.data.indicator.util.DoubleUtils;
 /**
  * @author Rootfive
  * 百度百科：https://baike.baidu.com/item/KDJ%E6%8C%87%E6%A0%87
- * 
+ * <pre>
  * KDJ指标又叫随机指标，随机指标在图表上共有三根线，K线、D线和J线。
  * 随机指标在计算中考虑了计算周期内的最高随机指标价、最低价，兼顾了股价波动中的随机振幅，因而人们认为随机指标更真实地反映股价的波动，其提示作用更加明显。
  * kdj指标K表示什么KDJ是随机指标，
@@ -26,6 +25,7 @@ import xlc.quant.data.indicator.util.DoubleUtils;
  * 933 这3种数值是经过长期投资实操得出的满意参数，
  * 比较适合短线的进出，而若是在中长线来看，9天的参数仍然不够用，所以有的人会选用36，3，3的参数。
  * kdj指标也叫做随机指标，是一种股票技术分析指标，主要用于股市的中短期趋势分析，是股票市场上最常用的技术分析工具之一。
+ * </pre>
  */
 @Data
 @NoArgsConstructor
@@ -68,7 +68,7 @@ public class KDJ extends Indicator {
 	 * @param capacity
 	 * @return
 	 */
-	public static <C extends IndicatorComputeCarrier<?>>  IndicatorCalculator<C, KDJ> buildCalculator(int capacity, int kCycle, int dCycle) {
+	public static <CARRIER extends IndicatorComputeCarrier<?>>  IndicatorCalculator<CARRIER, KDJ> buildCalculator(int capacity, int kCycle, int dCycle) {
 		return new KDJCalculator<>(capacity, kCycle, dCycle);
 	}
 
@@ -76,7 +76,7 @@ public class KDJ extends Indicator {
 	 * 计算器
 	 * @author Rootfive
 	 */
-	private static class KDJCalculator<C extends IndicatorComputeCarrier<?>> extends IndicatorCalculator<C, KDJ> {
+	private static class KDJCalculator<CARRIER extends IndicatorComputeCarrier<?>> extends IndicatorCalculator<CARRIER, KDJ> {
 		/** K值的计算周期 */
 		private final int kCycle;
 
@@ -90,23 +90,25 @@ public class KDJ extends Indicator {
 		}
 
 		/***
+		 * <pre>
 		 * 公式说明：以日KDJ数值的计算为例， 计算公式为：n日RSV=（Cn－Ln）÷（Hn－Ln）×100
 		 * RSV=(收盘价-最近N日最低价)+(最近N日最高价-最近N日最低价)x100) 公式说明: Cn为第n日收盘价； Ln为n日内的最低价；
 		 * Hn为n日内的最高价。 RSV值始终在1—100间波动。
+		 * </pre>
 		 */
 		@Override
-		protected KDJ executeCalculate(Function<C, KDJ> propertyGetter,Consumer<KDJ> propertySetter) {
-			C headData = getHead();
+		protected KDJ executeCalculate(Function<CARRIER, KDJ> propertyGetter) {
+			CARRIER headData = getHead();
 			// 第收盘价
 			double valueCn = headData.getClose();
 			// Hn为n日内的最高价
 			double valueHn = headData.getHigh();
 			// Ln为n日内的最低价
 			double valueLn = headData.getLow();
-			for (int i = 0; i < circularData.length; i++) {
-				C callback = getPrevByNum(i);
-				valueHn = Math.max(valueHn, callback.getHigh());
-				valueLn = Math.min(valueLn, callback.getLow());
+			for (int i = 1; i < carrierData.length; i++) {
+				CARRIER carrier_i = getPrevByNum(i);
+				valueHn = Math.max(valueHn, carrier_i.getHigh());
+				valueLn = Math.min(valueLn, carrier_i.getLow());
 			}
 			
 			// 计算公式为：n日RSV=（Cn－Ln）÷（Hn－Ln）×100,四舍五入，保留4位小数
@@ -123,7 +125,7 @@ public class KDJ extends Indicator {
 			 * 计算K值: 当日K值=2/3×前一日K值＋1/3×当日RSV 计算D值： 当日D值=2/3×前一日D值＋1/3×当日K值 计算J值：
 			 * 当日J值=3*当日K值-2*当日D值 【注意】若无前一日K 值与D值，则可分别用50（1-100的中间值）来代替。
 			 */
-			C prev = getPrev();
+			CARRIER prev = getPrev();
 
 			// 前一个交易统计的KDJ
 			KDJ prevKdj = null;
@@ -161,10 +163,7 @@ public class KDJ extends Indicator {
 			Double headD = DoubleUtils.setScale(dValue,2);
 			Double headJ = DoubleUtils.setScale(jValue,2);
 			
-			KDJ kdj = new KDJ(headK, headD, headJ);
-			//设置计算结果
-			propertySetter.accept(kdj);
-			return kdj;
+			return new KDJ(headK, headD, headJ);
 		}
 
 	}

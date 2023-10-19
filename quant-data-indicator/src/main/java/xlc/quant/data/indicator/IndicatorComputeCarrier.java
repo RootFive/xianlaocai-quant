@@ -2,9 +2,20 @@ package xlc.quant.data.indicator;
 
 /**
  * 指标计算载体
- * 注意：下面的行情数据，如果是A股。请一定要使用复权数据，前复权和后复权均可
+ * @author Rootfive
+ * @param <TIME>  枚举类型，时间，目前支持以下类型：
+ *<pre>
+ *	Long			时间戳
+ *	Instant			时间戳
+ *	LocalDate		只包含日期，比如：2020-05-20
+ *	LocalTime		只包含时间，比如：13:14:00
+ *	LocalDateTime	包含日期和时间，比如：2020-05-20 13:14:00
+ *	ZonedDateTime	带时区的时间
+ *	Date 			日期时间
+ *</pre>
+ * 注意：指标计算载体数据，如果是A股数据。请一定要使用复权数据，前复权和后复权均可
  */
-public interface IndicatorComputeCarrier<C extends Comparable<? super C>> extends CircularFixedWindowCalculable<C>{
+public interface IndicatorComputeCarrier<TIME extends Comparable<? super TIME>> extends FixedWindowCarrier<TIME>{
 	/**
 	 * @return 开盘价
 	 */
@@ -86,31 +97,31 @@ public interface IndicatorComputeCarrier<C extends Comparable<? super C>> extend
 	
 
 	/**
-	 * @return 前收 涨跌额
+	 * @return 涨跌额-基于前收价格  
 	 */
 	double getPriceChange();
 	/**
-	 * @param priceChange 前收 涨跌额
+	 * @param priceChange 涨跌额-基于前收价格
 	 */
 	void setPriceChange(double priceChange);
 
 	
 	/**
-	 * @return 涨跌幅（百分点）
+	 * @return 涨跌幅（百分点）-基于前收价格
 	 */
 	double getPctChange();
 	/**
-	 * @param pctChange 涨跌幅（百分点）
+	 * @param pctChange 涨跌幅（百分点）-基于前收价格
 	 */
 	void setPctChange(double pctChange);
 	
 
 	/**
-	 * @return 价格震幅（百分点）
+	 * @return 价格震幅（百分点）-基于前收价格
 	 */
 	double getAmplitude();
 	/**
-	 * @param amplitude 价格震幅（百分点）
+	 * @param amplitude 价格震幅（百分点）-基于前收价格
 	 */
 	void setAmplitude(double amplitude);
 

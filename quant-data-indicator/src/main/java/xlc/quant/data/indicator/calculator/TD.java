@@ -1,6 +1,5 @@
 package xlc.quant.data.indicator.calculator;
 
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 import lombok.Data;
@@ -12,12 +11,12 @@ import xlc.quant.data.indicator.IndicatorComputeCarrier;
 
 /**
  * 源自于TD序列, 神奇九转，九转序列,是因TD序列的9天收盘价研判标准而得名。
- * 
  * @author Rootfive 
- * https://zhuanlan.zhihu.com/p/354262959
- *         
- * 好文：https://www.cnblogs.com/proxukun/p/4988771.html
  * 
+ * <pre>
+ * https://zhuanlan.zhihu.com/p/354262959
+ * 好文：https://www.cnblogs.com/proxukun/p/4988771.html
+ * </pre>
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -31,7 +30,7 @@ public class TD extends Indicator {
 	 * @param capacity
 	 * @return
 	 */
-	public static <C extends IndicatorComputeCarrier<?>> IndicatorCalculator<C, Integer> buildCalculator(int capacity, int moveSize) {
+	public static <CARRIER extends IndicatorComputeCarrier<?>> IndicatorCalculator<CARRIER, Integer> buildCalculator(int capacity, int moveSize) {
 		return new TDCalculator<>(capacity, moveSize);
 	}
 
@@ -40,7 +39,7 @@ public class TD extends Indicator {
 	 * 计算器
 	 * @author Rootfive
 	 */
-	private static class TDCalculator<C extends IndicatorComputeCarrier<?>> extends IndicatorCalculator<C, Integer> {
+	private static class TDCalculator<CARRIER extends IndicatorComputeCarrier<?>> extends IndicatorCalculator<CARRIER, Integer> {
 
 		private final int moveSize;
 
@@ -54,23 +53,20 @@ public class TD extends Indicator {
 		}
 
 		@Override
-		protected Integer executeCalculate(Function<C, Integer> propertyGetter,Consumer<Integer> propertySetter) {
+		protected Integer executeCalculate(Function<CARRIER, Integer> propertyGetter) {
 			if (executeTotal < (1 + moveSize)) {
 				return null;
 			}
 
 			// 第一根
-			C current = getHead();
-			C compareMove = getPrevByNum(moveSize);
-			C prev = getPrev();
+			CARRIER head = getHead();
+			CARRIER compareMove = getPrevByNum(moveSize);
+			CARRIER prev = getPrev();
 
-			double currentClose = current.getClose();
+			double currentClose = head.getClose();
 			double compareMoveClose = compareMove.getClose();
 
-			int tdValue = getCurrentTD(currentClose, compareMoveClose, propertyGetter.apply(prev));
-			//设置计算结果
-			propertySetter.accept(tdValue);
-			return tdValue;
+			return getCurrentTD(currentClose, compareMoveClose, propertyGetter.apply(prev));
 		}
 
 		private static int getCurrentTD(Double current, Double prev, Integer preTD) {

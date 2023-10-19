@@ -1,6 +1,5 @@
 package xlc.quant.data.indicator.calculator;
 
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 import lombok.Data;
@@ -13,11 +12,11 @@ import xlc.quant.data.indicator.util.DoubleUtils;
 
 /**
  * @author Rootfive 布林线指标
- *         https://baike.baidu.com/item/%E5%B8%83%E6%9E%97%E7%BA%BF%E6%8C%87%E6%A0%87/3325894
+ * <pre>
  * 公式说明：
  * 	布林线指标的参数最好设为20,以日BOLL指标计算为例，其计算方法如下： 日BOLL指标的计算公式： 中轨线=N日的移动平均线
  * 上轨线=中轨线+两倍的标准差 下轨线=中轨线－两倍的标准差
- * 
+ * <p>
  * 公式说明: 日BOLL指标的计算过程 1）计算MA： MA=N日内的收盘价之和÷N
  * 2）计算标准差MD：MD=平方根（N-1）日的（C－MA）的两次方之和除以N。（C指收盘价） 3）计算MB、UP、DN线 MB=N日的MA
  * UP=MB+k×MD DN=MB－k×MD
@@ -27,6 +26,7 @@ import xlc.quant.data.indicator.util.DoubleUtils;
  * 中轨线MB是MB数值的连线，用白色线表示； 下轨线DN是DN数值的连线，用紫色线表示； 价格线是以美国线表示，颜色为浅蓝色。
  * 
  * 和其他技术指标一样，在实战中，投资者不需要进行BOLL指标的计算，主要是了解BOLL的计算方法和过程，以便更加深入地掌握BOLL指标的实质，为运用指标打下基础。
+ * </pre>
  */
 @Data
 @NoArgsConstructor
@@ -63,7 +63,7 @@ public class BOLL extends Indicator {
 	 * @param indicatorSetScale        指标精度
 	 * @return
 	 */
-	public static <C extends IndicatorComputeCarrier<?>> IndicatorCalculator<C,BOLL> buildCalculator(int capacity, double k,int indicatorSetScale) {
+	public static <CARRIER extends IndicatorComputeCarrier<?>> IndicatorCalculator<CARRIER,BOLL> buildCalculator(int capacity, double k,int indicatorSetScale) {
 		return new BOLLCalculator<>(capacity, k, indicatorSetScale);
 	}
 
@@ -71,7 +71,7 @@ public class BOLL extends Indicator {
 	 * BOLL计算器
 	 * @author Rootfive
 	 */
-	private static class BOLLCalculator<C extends IndicatorComputeCarrier<?>> extends IndicatorCalculator<C,BOLL> {
+	private static class BOLLCalculator<CARRIER extends IndicatorComputeCarrier<?>> extends IndicatorCalculator<CARRIER,BOLL> {
 		/** K为参数，可根据股票的特性来做相应的调整，一般默认为2 */
 		private static final double DEFAULT_K = 2;
 		/** 布林线指标的参数N,指的是K线的个数,默认20 */
@@ -97,17 +97,17 @@ public class BOLL extends Indicator {
 		}
 
 		@Override
-		protected BOLL executeCalculate(Function<C, BOLL> propertyGetter,Consumer<BOLL> propertySetter) {
-			C head = getHead();
+		protected BOLL executeCalculate(Function<CARRIER, BOLL> propertyGetter) {
+			CARRIER head = getHead();
 			// 1）计算MA: MA=N日内的收盘价之和÷N
 
 			// 求收盘价 平均值
 			double sumClose = head.getClose();
-			for (int i = 1; i < circularData.length; i++) {
+			for (int i = 1; i < carrierData.length; i++) {
 				sumClose =  sumClose+ getPrevByNum(i).getClose();
 			}
 			// 收盘价 平均值
-			Double closeMA = sumClose/circularData.length;
+			Double closeMA = sumClose/carrierData.length;
 			
 			// BOLL线
 			if (!isFullCapacity()) {
@@ -118,16 +118,16 @@ public class BOLL extends Indicator {
 			// 2.1 计算方差
 			Double varianceS2 = DoubleUtils.ZERO;
 			
-			for (int i = 0; i < circularData.length; i++) {
-				C m = getPrevByNum(i);
+			for (int i = 0; i < carrierData.length; i++) {
+				CARRIER carrier_i = getPrevByNum(i);
 				// 差值
-				Double DValue = m.getClose() -closeMA;
+				Double DValue = carrier_i.getClose() -closeMA;
 				// 差值的平方只和
 				varianceS2 = varianceS2 + DValue * DValue;
 			}
 			
 			// 方差
-			Double variance = DoubleUtils.divide(varianceS2,fwcPeriod, DoubleUtils.MAX_SCALE);
+			Double variance = DoubleUtils.divide(varianceS2,circularPeriod, DoubleUtils.MAX_SCALE);
 			// 标准差
 			Double MD = Math.sqrt(variance);
 
@@ -147,9 +147,6 @@ public class BOLL extends Indicator {
 				Integer bollContinueExpand = getContinueValue(UP - DN,prevBoll.getU()- prevBoll.getD(), prevBoll.getContinueExpand());
 				boll = new BOLL(UP, MB, DN, bollContinueExpand);
 			}
-			
-			//设置计算结果
-			propertySetter.accept(boll);
 			return boll;
 		}
 

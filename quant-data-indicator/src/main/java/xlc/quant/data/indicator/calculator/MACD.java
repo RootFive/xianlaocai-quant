@@ -1,6 +1,5 @@
 package xlc.quant.data.indicator.calculator;
 
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 import lombok.Data;
@@ -12,9 +11,8 @@ import xlc.quant.data.indicator.IndicatorComputeCarrier;
 import xlc.quant.data.indicator.util.DoubleUtils;
 
 /**
- * 
- * @author Rootfive
  * 平滑异同移动平均线指标MACD指标
+ * @author Rootfive
  */
 @Data
 @NoArgsConstructor
@@ -59,7 +57,7 @@ public class MACD extends Indicator {
 	 * @param difCycle
 	 * @return
 	 */
-	public static <C extends IndicatorComputeCarrier<?>> IndicatorCalculator<C, MACD> buildCalculator(int fastCycle, int slowCycle, int difCycle,int indicatorSetScale) {
+	public static <CARRIER extends IndicatorComputeCarrier<?>> IndicatorCalculator<CARRIER, MACD> buildCalculator(int fastCycle, int slowCycle, int difCycle,int indicatorSetScale) {
 		return new MACDCalculator<>(fastCycle, slowCycle, difCycle,indicatorSetScale);
 	}
 
@@ -67,7 +65,7 @@ public class MACD extends Indicator {
 	 * 计算器
 	 * @author Rootfive
 	 */
-	private static class MACDCalculator<C extends IndicatorComputeCarrier<?>> extends IndicatorCalculator<C, MACD> {
+	private static class MACDCalculator<CARRIER extends IndicatorComputeCarrier<?>> extends IndicatorCalculator<CARRIER, MACD> {
 		
 		/** 快线平滑系数 设定值为（2/n+1); */
 		private final Double fastEMA_α;
@@ -90,9 +88,9 @@ public class MACD extends Indicator {
 		}
 
 		@Override
-		protected MACD executeCalculate(Function<C, MACD> propertyGetter,Consumer<MACD> propertySetter) {
-			C head = getHead();
-			C prev = getPrev();
+		protected MACD executeCalculate(Function<CARRIER, MACD> propertyGetter) {
+			CARRIER head = getHead();
+			CARRIER prev = getPrev();
 			
 			// 前一个计算指数
 			MACD prevMacd = null;
@@ -137,9 +135,6 @@ public class MACD extends Indicator {
 				int continueResult = getContinueValue(macdValue, prevMacd.getMacdValue(), prevMacd.getContinueRise());
 				macd = new MACD(fastEma, slowEma, dif, dea, macdValue, continueResult);
 			}
-			
-			//设置计算结果
-			propertySetter.accept(macd);
 			return macd;
 		}
 

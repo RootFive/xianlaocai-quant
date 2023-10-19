@@ -1,6 +1,5 @@
 package xlc.quant.data.indicator.calculator;
 
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 import lombok.Data;
@@ -13,6 +12,7 @@ import xlc.quant.data.indicator.util.DoubleUtils;
 /**
  * 威廉指标
  * @author Rootfive
+ * <pre>
  * 威廉指标（Williams %R或简称W%R）
  * 百度百科：https://baike.baidu.com/item/%E5%A8%81%E5%BB%89%E6%8C%87%E6%A0%87
  * W&R属于摆动类反向指标， 即：修复当股价上涨，W&R指标向下。股价下跌，W&R指标向上，则为上涨。
@@ -32,6 +32,7 @@ import xlc.quant.data.indicator.util.DoubleUtils;
  * 在W&R进入高位后，一般要回头，如果股价继续上升就产生了背离，是卖出信号。 在W&R进入低位后，一般要反弹，如果股价继续下降就产生了背离。
  * W&R连续几次撞顶（底），局部形成双重或多重顶（底），是卖出（买进）的信号。
  * 同时，使用过程中应该注意与其他技术指标相互配合。在盘整的过程中，W&R的准确性较高，而在上升或下降趋势当中，却不能只以W&R超买超卖信号作为行情判断的依据。
+ * </pre>
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -44,7 +45,7 @@ public class WR extends Indicator {
 	 * @param capacity
 	 * @return
 	 */
-	public static <C extends IndicatorComputeCarrier<?>> IndicatorCalculator<C, Double> buildCalculator(int capacity) {
+	public static <CARRIER extends IndicatorComputeCarrier<?>> IndicatorCalculator<CARRIER, Double> buildCalculator(int capacity) {
 		return new WRIndicatorCalculateExecutor<>(capacity);
 	}
 
@@ -52,7 +53,7 @@ public class WR extends Indicator {
 	 * 计算器
 	 * @author Rootfive
 	 */
-	private static class WRIndicatorCalculateExecutor<C extends IndicatorComputeCarrier<?>> extends IndicatorCalculator<C, Double> {
+	private static class WRIndicatorCalculateExecutor<CARRIER extends IndicatorComputeCarrier<?>> extends IndicatorCalculator<CARRIER, Double> {
 
 		/**
 		 * @param capacity
@@ -62,16 +63,16 @@ public class WR extends Indicator {
 		}
 
 		@Override
-		protected Double executeCalculate(Function<C, Double> propertyGetter,Consumer<Double> propertySetter) {
-			C head = getHead();
+		protected Double executeCalculate(Function<CARRIER, Double> propertyGetter) {
+			CARRIER head = getHead();
 
 			double headClose = head.getClose();
 			double maxHigh = head.getHigh();
 			double minLow = head.getLow();
-			for (int i = 1; i < circularData.length; i++) {
-				C callback = getPrevByNum(i);
-				maxHigh = Math.max(maxHigh, callback.getHigh());
-				minLow = Math.min(minLow, callback.getLow());
+			for (int i = 1; i < carrierData.length; i++) {
+				CARRIER carrier_i = getPrevByNum(i);
+				maxHigh = Math.max(maxHigh, carrier_i.getHigh());
+				minLow = Math.min(minLow, carrier_i.getLow());
 			}
 			// 计算公式：W%R=（Hn—C）÷（Hn—Ln）×100其中
 			Double wrValue = null;
@@ -81,10 +82,6 @@ public class WR extends Indicator {
 			}else {
 				wrValue = DoubleUtils.divideByPct(maxHigh-headClose, maxHigh-minLow);
 			}
-			
-			//设置计算结果
-			propertySetter.accept(wrValue);
-			
 			return wrValue;
 		}
 

@@ -118,12 +118,6 @@ public class DoubleUtils {
 		return  setScale(dividend/divisor,scale);
 	}	
 	
-	
-	public static void main(String[] args) {
-		System.out.println(divide(2, 3, 15));
-	}
-	
-	
 	/**
 	 * 求最大值
 	 * @param numbers

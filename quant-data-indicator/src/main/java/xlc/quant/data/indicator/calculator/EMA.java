@@ -1,6 +1,5 @@
 package xlc.quant.data.indicator.calculator;
 
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 import lombok.AllArgsConstructor;
@@ -13,7 +12,8 @@ import xlc.quant.data.indicator.IndicatorComputeCarrier;
 import xlc.quant.data.indicator.util.DoubleUtils;
 
 /**
- * @author Rootfive 百度百科：https://blog.csdn.net/zkxshg/article/details/86546159
+ * @author Rootfive
+ * <pre>
  *  求X的N日指数平滑移动平均，
  *  在股票公式中一般表达为：EMA（X，N）。
  *  其中：
@@ -22,6 +22,7 @@ import xlc.quant.data.indicator.util.DoubleUtils;
  *  	当日指数平均值 = 平滑系数 * （当日指数值 - 昨日指数平均值） + 昨日指数平均值 ； 
  *  	平滑系数 = 2 /（周期单位+1）； 
  *  由以上公式推导开，得到：EMA(N) = 2 * X / (N+1) + (N-1) * EMA (N-1) / (N+1)。
+ *  </pre>
  */
 @Data
 @NoArgsConstructor
@@ -39,7 +40,7 @@ public class EMA extends Indicator {
 	 * @param capacity
 	 * @return
 	 */
-	public static <C extends IndicatorComputeCarrier<?>>   IndicatorCalculator<C, Double> buildCalculator(int capacity,int indicatorSetScale) {
+	public static <CARRIER extends IndicatorComputeCarrier<?>>   IndicatorCalculator<CARRIER, Double> buildCalculator(int capacity,int indicatorSetScale) {
 		return new EMACalculator<>(capacity,indicatorSetScale);
 	}
 
@@ -50,11 +51,13 @@ public class EMA extends Indicator {
 	 * @param prevEma
 	 * @param α
 	 * @return
+	 * <pre>
 	 * EMA指标英文全称ExponentialMovingAverage，中文全称是指数平滑移动平均线，简称指数平均线。
 	 * EMA也是一种趋向类指标，本义是以指数式递减加权的移动平均。在炒股软件中，该指标的数值多用曲线表示，所以称为指数移动平均线。
 	 * 其基本计算公式为：EMA(n)=α×Cn+(1-α)×EMA(n-1) = α×[Cn-EMA(n-1)]+EMA(n-1) 其中：
 	 * EMA(n)为第n日EMA; α为平滑系数，设定值为（2/n+1); Cn为第n日收盘价； EMA(n-1)为第n-1日EMA。 平滑系数
 	 * 其基本计算公式为：EMA(n)=α×Cn+(1-α)×EMA(n-1) =  α * [Cn- EMA(n-1)]  + EMA(n-1)
+	 * </pre>
 	 */
 	public static Double calculateEma(Double currentUse, Double prevEma, double α,int indicatorSetScale) {
 		return DoubleUtils.setScale((currentUse-prevEma) * α + prevEma, indicatorSetScale);
@@ -65,7 +68,7 @@ public class EMA extends Indicator {
 	 * 计算器
 	 * @author Rootfive
 	 */
-	private static class EMACalculator<C extends IndicatorComputeCarrier<?>>  extends IndicatorCalculator<C, Double> {
+	private static class EMACalculator<CARRIER extends IndicatorComputeCarrier<?>>  extends IndicatorCalculator<CARRIER, Double> {
 		
 		/** 平滑系数的分子。 α为平滑系数，设定值为（2/n+1); */
 		private final Double α;
@@ -82,10 +85,10 @@ public class EMA extends Indicator {
 		}
 
 		@Override
-		protected Double executeCalculate(Function<C, Double> propertyGetter,Consumer<Double> propertySetter) {
-			C head = getHead();
+		protected Double executeCalculate(Function<CARRIER, Double> propertyGetter) {
+			CARRIER head = getHead();
 			// 前一个计算指数
-			C prev = getPrev();
+			CARRIER prev = getPrev();
 			Double emaValue = null;
 			if (prev == null) {
 				/*
@@ -99,9 +102,6 @@ public class EMA extends Indicator {
 				Double prevEmaValue = propertyGetter.apply(prev);
 				emaValue = EMA.calculateEma(headClose, prevEmaValue, α,indicatorSetScale);
 			}
-			
-			//设置计算结果
-			propertySetter.accept(emaValue);
 			return emaValue;
 		}
 

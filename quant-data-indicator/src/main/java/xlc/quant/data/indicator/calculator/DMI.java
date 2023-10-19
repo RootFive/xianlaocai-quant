@@ -1,6 +1,5 @@
 package xlc.quant.data.indicator.calculator;
 
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 import lombok.Data;
@@ -11,6 +10,10 @@ import xlc.quant.data.indicator.IndicatorCalculator;
 import xlc.quant.data.indicator.IndicatorComputeCarrier;
 import xlc.quant.data.indicator.util.DoubleUtils;
 
+/**
+ * 动向指标或趋向指标
+ * @author Rootfive
+ */
 @Data
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
@@ -61,7 +64,7 @@ public class DMI extends Indicator {
 	 * @param adxPeriod
 	 * @return
 	 */
-	public static <C extends IndicatorComputeCarrier<?>> IndicatorCalculator<C, DMI> buildCalculator(int diPeriod, int adxPeriod) {
+	public static <CARRIER extends IndicatorComputeCarrier<?>> IndicatorCalculator<CARRIER, DMI> buildCalculator(int diPeriod, int adxPeriod) {
 		return new DMICalculator<>(diPeriod, adxPeriod);
 	}
 	
@@ -70,7 +73,7 @@ public class DMI extends Indicator {
 	 * 内部类实现DMI计算器
 	 * @author Rootfive
 	 */
-	private static class DMICalculator<C extends IndicatorComputeCarrier<?>> extends IndicatorCalculator<C, DMI> {
+	private static class DMICalculator<CARRIER extends IndicatorComputeCarrier<?>> extends IndicatorCalculator<CARRIER, DMI> {
 		
 		/** 趋向周期 */
 		private final int adxPeriod;
@@ -89,9 +92,9 @@ public class DMI extends Indicator {
 		 *  百度百科：https://baike.baidu.com/item/DMI%E6%8C%87%E6%A0%87/3423254#4
 		 */
 		@Override
-		protected DMI executeCalculate(Function<C, DMI> propertyGetter,Consumer<DMI> propertySetter) {
-			C prev = getPrev();
-			C head = getHead();
+		protected DMI executeCalculate(Function<CARRIER, DMI> propertyGetter) {
+			CARRIER prev = getPrev();
+			CARRIER head = getHead();
 
 			Double tr = null;
 			Double dmp = null;
@@ -126,12 +129,14 @@ public class DMI extends Indicator {
 			double dmpSum = dmiHead.getDmp();
 			double dmmSum = dmiHead.getDmm();
 			
-			for (int i = 1; i < circularData.length; i++) {
-				DMI dmi_i = propertyGetter.apply(getPrevByNum(i));
-				
-				trSum= trSum+dmi_i.getTr();
-				dmpSum= dmpSum+dmi_i.getDmp();
-				dmmSum= dmmSum+dmi_i.getDmm();
+			for (int i = 1; i < carrierData.length; i++) {
+				CARRIER carrier_i = getPrevByNum(i);
+				if (carrier_i !=null) {
+					DMI dmi_i = propertyGetter.apply(carrier_i);
+					trSum= trSum+dmi_i.getTr();
+					dmpSum= dmpSum+dmi_i.getDmp();
+					dmmSum= dmmSum+dmi_i.getDmm();
+				}
 			}
 
 			Double dip = null;
@@ -158,8 +163,6 @@ public class DMI extends Indicator {
 			dmiHead.setDx(dx);
 
 			if (executeTotal <= adxPeriod) {
-				//设置计算结果
-				propertySetter.accept(dmiHead);
 				return dmiHead;
 			}
 			
@@ -179,8 +182,6 @@ public class DMI extends Indicator {
 			}
 			
 			dmiHead.setAdxr(adxr);
-			//设置计算结果
-			propertySetter.accept(dmiHead);
 			return dmiHead;
 		}
 	}

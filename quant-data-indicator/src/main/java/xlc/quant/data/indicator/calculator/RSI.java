@@ -1,6 +1,5 @@
 package xlc.quant.data.indicator.calculator;
 
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 import lombok.Data;
@@ -12,11 +11,9 @@ import xlc.quant.data.indicator.IndicatorComputeCarrier;
 import xlc.quant.data.indicator.util.DoubleUtils;
 
 /**
- * @author Rootfive
- * 百度百科：https://baike.baidu.com/item/%E7%9B%B8%E5%AF%B9%E5%BC%BA%E5%BC%B1%E6%8C%87%E6%A0%87
- * 
  * 中文名 RSI指标    是相对强弱指标
- * 
+ * @author Rootfive
+ * <pre>
  * 相对强弱指标RSI是用以计测市场供需关系和买卖力道的方法及指标。
  * 计算公式：
  * N日RSI =A/（A+B）×100
@@ -33,6 +30,7 @@ import xlc.quant.data.indicator.util.DoubleUtils;
  * 20-50 弱 观望
  * 0-20 极弱 买入
  * 这里的“极强”、“强”、“弱”、“极弱”只是一个相对的分析概念。
+ * </pre>
  */
 @Data
 @NoArgsConstructor
@@ -62,7 +60,7 @@ public class RSI extends Indicator {
 	 * @param capacity
 	 * @return
 	 */
-	public static <C extends IndicatorComputeCarrier<?>> IndicatorCalculator<C, RSI> buildCalculator(int capacity) {
+	public static <CARRIER extends IndicatorComputeCarrier<?>> IndicatorCalculator<CARRIER, RSI> buildCalculator(int capacity) {
 		return new RSICalculator<>(capacity);
 	}
 
@@ -70,7 +68,7 @@ public class RSI extends Indicator {
 	 * 计算器
 	 * @author Rootfive
 	 */
-	private static class RSICalculator<C extends IndicatorComputeCarrier<?>> extends IndicatorCalculator<C, RSI> {
+	private static class RSICalculator<CARRIER extends IndicatorComputeCarrier<?>> extends IndicatorCalculator<CARRIER, RSI> {
 
 		private final double α;
 		private final double β;
@@ -85,7 +83,7 @@ public class RSI extends Indicator {
 		}
 
 		@Override
-		protected RSI executeCalculate(Function<C, RSI> propertyGetter,Consumer<RSI> propertySetter) {
+		protected RSI executeCalculate(Function<CARRIER, RSI> propertyGetter) {
 
 			Double emaUp = null;
 			Double emaDown = null;
@@ -93,13 +91,13 @@ public class RSI extends Indicator {
 			RSI prevRSI = propertyGetter.apply(getPrev());
 			if (prevRSI == null) {
 				// 涨额之和
-				Double sumUp = DoubleUtils.ZERO;
+				double sumUp = DoubleUtils.ZERO;
 				// 跌额之和
-				Double sumDown = DoubleUtils.ZERO;
+				double sumDown = DoubleUtils.ZERO;
 				
-				for (int i = 0; i < circularData.length; i++) {
-					C calculate = getPrevByNum(i);
-					Double changePrice = calculate.getPriceChange();
+				for (int i = 0; i < carrierData.length; i++) {
+					CARRIER carrier_i = getPrevByNum(i);
+					Double changePrice = carrier_i.getPriceChange();
 					// 涨幅之和累加
 					if (changePrice > DoubleUtils.ZERO) {
 						sumUp = sumUp + Math.abs(changePrice);
@@ -108,13 +106,13 @@ public class RSI extends Indicator {
 					}
 				}
 
-				emaUp = DoubleUtils.divide(sumUp, fwcPeriod, DoubleUtils.MAX_SCALE);
-				emaDown = DoubleUtils.divide(sumDown, fwcPeriod, DoubleUtils.MAX_SCALE);
+				emaUp = DoubleUtils.divide(sumUp, circularPeriod, DoubleUtils.MAX_SCALE);
+				emaDown = DoubleUtils.divide(sumDown, circularPeriod, DoubleUtils.MAX_SCALE);
 			} else {
 				Double prevEmaUp = prevRSI.getEmaUp();
 				Double prevEmaDown = prevRSI.getEmaDown();
 
-				C head = getHead();
+				CARRIER head = getHead();
 				Double changePrice = head.getPriceChange();
 
 				// 涨幅之和累加
@@ -142,10 +140,7 @@ public class RSI extends Indicator {
 				rsiValue = DoubleUtils.divideByPct(emaUp, sumEmaChanges);
 			}
 			
-			RSI rsi = new RSI(rsiValue, emaUp, emaDown);
-			//设置计算结果
-			propertySetter.accept(rsi);
-			return rsi;
+			return new RSI(rsiValue, emaUp, emaDown);
 		}
 
 	}

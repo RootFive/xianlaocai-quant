@@ -3,7 +3,6 @@ package xlc.quant.data.indicator.calculator.innovate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 import lombok.Data;
@@ -50,7 +49,7 @@ public class TOPMV extends Indicator {
 	 * @param indicatorVolumeSetScale  指标Volume精度
 	 * @return
 	 */
-	public static <C extends IndicatorComputeCarrier<?>> IndicatorCalculator<C, TOPMV> buildCalculator(int capacity, int top,int indicatorAmountSetScale,int indicatorVolumeSetScale) {
+	public static <CARRIER extends IndicatorComputeCarrier<?>> IndicatorCalculator<CARRIER, TOPMV> buildCalculator(int capacity, int top,int indicatorAmountSetScale,int indicatorVolumeSetScale) {
 		return  new TOPMVCalculator<>(capacity,  top, indicatorAmountSetScale, indicatorVolumeSetScale);
     }
 
@@ -58,7 +57,7 @@ public class TOPMV extends Indicator {
 	 * 计算器
 	 * @author Rootfive
 	 */
-	private static class TOPMVCalculator<C extends IndicatorComputeCarrier<?>>  extends IndicatorCalculator<C, TOPMV> {
+	private static class TOPMVCalculator<CARRIER extends IndicatorComputeCarrier<?>>  extends IndicatorCalculator<CARRIER, TOPMV> {
 
 		private final int top;
 		/** 指标Amount精度 */
@@ -83,17 +82,17 @@ public class TOPMV extends Indicator {
 		 *
 		 */
 		@Override
-		protected TOPMV executeCalculate(Function<C, TOPMV> propertyGetter,Consumer<TOPMV> propertySetter) {
+		protected TOPMV executeCalculate(Function<CARRIER, TOPMV> propertyGetter) {
 			// 成交额-所有
-			List<Double> listAmount = new ArrayList<>(circularData.length);
+			List<Double> listAmount = new ArrayList<>(carrierData.length);
 			// 成交量-所有
-			List<Double> listVolume = new ArrayList<>(circularData.length);
+			List<Double> listVolume = new ArrayList<>(carrierData.length);
 			
 			
-			for (int i = 0; i < circularData.length; i++) {
-				C callback = getPrevByNum(i);
-				listAmount.add(callback.getAmount());
-				listVolume.add(callback.getVolume());
+			for (int i = 0; i < carrierData.length; i++) {
+				CARRIER carrier_i = getPrevByNum(i);
+				listAmount.add(carrier_i.getAmount());
+				listVolume.add(carrier_i.getVolume());
 			}
 			
 			
@@ -117,12 +116,8 @@ public class TOPMV extends Indicator {
 			/** 成交量-最低值-前X个均值 */
 			Double vtl = DoubleUtils.divide(naturalOrderSumVolume, top, indicatorVolumeSetScale);
 			
+			return new TOPMV(ath, atl, vth, vtl);
 			
-			TOPMV topmv = new TOPMV(ath, atl, vth, vtl);
-			
-			//设置计算结果
-			propertySetter.accept(topmv);
-			return topmv;
 		}
 
 	}
