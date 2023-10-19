@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.xianlaocai.quant</groupId>
 	<artifactId>xianlaocai-quant</artifactId>
-	<version>XLCQ20231019</version>
+	<version>XLCQ20231020</version>
 	<packaging>pom</packaging>
 	<name>xianlaocai-quant</name>
 	<description>
@@ -34,7 +34,7 @@
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
 
-		<xianlaocai-quant.version>XLCQ20231019</xianlaocai-quant.version>
+		<xianlaocai-quant.version>XLCQ20231020</xianlaocai-quant.version>
 
 		<!-- maven构建依赖 -->
 		<!--<maven-jar-plugin.version>3.3.0</maven-jar-plugin.version>
@@ -90,7 +90,7 @@
 				<groupId>com.xianlaocai.quant</groupId>
 				<artifactId>quant-data-indicator</artifactId>
 				<!--<version>${xianlaocai-quant.version}</version>-->
-				<version>XLCQ20231019</version>
+				<version>XLCQ20231020</version>
 			</dependency>
 
 			<!-- lombok支持 -->

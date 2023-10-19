@@ -34,7 +34,7 @@ mvnrepository地址（更新较慢）：https://mvnrepository.com/artifact/com.x
 	<dependency>
 		<groupId>com.xianlaocai.quant</groupId>
 		<artifactId>quant-data-indicator</artifactId>
-		<version>XLCQ20231019</version>
+		<version>XLCQ20231020</version>
 	</dependency>
 ```
 
@@ -43,7 +43,7 @@ Gradle
 
 ```xml
 // https://mvnrepository.com/artifact/com.xianlaocai.quant/quant-data-indicator
-implementation group: 'com.xianlaocai.quant', name: 'quant-data-indicator', version: 'XLCQ20231019'
+implementation group: 'com.xianlaocai.quant', name: 'quant-data-indicator', version: 'XLCQ20231020'
 
 ```
 ### 基表计算示例 
