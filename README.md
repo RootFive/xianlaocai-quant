@@ -144,16 +144,16 @@ public class MA extends Indicator {
 
 
 ### XLCQ20231024
-1、修复xlc.quant.data.indicator.TimeSeriesDataRollingWindowQueue.getTail()在队列未满时，获取尾巴错误异常
+1、修复xlc.quant.data.indicator.TimeSeriesDataRollingWindowQueue.getTail()在队列未满时，获取尾元素异常
 
 2、增加指标管理员：xlc.quant.data.indicator.IndicatorCalculateManager<CARRIER>，可以计算多个指标
 
 
 ### 早起版本：省略
-7.XLCQ20231020
-6.XLCQ20231019
-5.XLCQ20230920
-4.XLCQ20230911
-3.XLCQ20230910
-2.XLCQ20230907
-1.XLCQ20230902
+7.XLCQ20231020  
+6.XLCQ20231019  
+5.XLCQ20230920  
+4.XLCQ20230911  
+3.XLCQ20230910  
+2.XLCQ20230907  
+1.XLCQ20230902  
