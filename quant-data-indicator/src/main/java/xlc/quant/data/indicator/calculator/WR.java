@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import xlc.quant.data.indicator.Indicator;
 import xlc.quant.data.indicator.IndicatorCalculator;
-import xlc.quant.data.indicator.IndicatorComputeCarrier;
+import xlc.quant.data.indicator.IndicatorCalculateCarrier;
 import xlc.quant.data.indicator.util.DoubleUtils;
 
 /**
@@ -45,7 +45,7 @@ public class WR extends Indicator {
 	 * @param capacity
 	 * @return
 	 */
-	public static <CARRIER extends IndicatorComputeCarrier<?>> IndicatorCalculator<CARRIER, Double> buildCalculator(int capacity) {
+	public static <CARRIER extends IndicatorCalculateCarrier<?>> IndicatorCalculator<CARRIER, Double> buildCalculator(int capacity) {
 		return new WRIndicatorCalculateExecutor<>(capacity);
 	}
 
@@ -53,7 +53,7 @@ public class WR extends Indicator {
 	 * 计算器
 	 * @author Rootfive
 	 */
-	private static class WRIndicatorCalculateExecutor<CARRIER extends IndicatorComputeCarrier<?>> extends IndicatorCalculator<CARRIER, Double> {
+	private static class WRIndicatorCalculateExecutor<CARRIER extends IndicatorCalculateCarrier<?>> extends IndicatorCalculator<CARRIER, Double> {
 
 		/**
 		 * @param capacity
@@ -69,8 +69,8 @@ public class WR extends Indicator {
 			double headClose = head.getClose();
 			double maxHigh = head.getHigh();
 			double minLow = head.getLow();
-			for (int i = 1; i < carrierData.length; i++) {
-				CARRIER carrier_i = getPrevByNum(i);
+			for (int i = 1; i < capacity(); i++) {
+				CARRIER carrier_i = get(i);
 				maxHigh = Math.max(maxHigh, carrier_i.getHigh());
 				minLow = Math.min(minLow, carrier_i.getLow());
 			}

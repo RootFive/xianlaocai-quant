@@ -8,7 +8,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import xlc.quant.data.indicator.Indicator;
 import xlc.quant.data.indicator.IndicatorCalculator;
-import xlc.quant.data.indicator.IndicatorComputeCarrier;
+import xlc.quant.data.indicator.IndicatorCalculateCarrier;
 import xlc.quant.data.indicator.util.DoubleUtils;
 
 /**
@@ -40,7 +40,7 @@ public class EMA extends Indicator {
 	 * @param capacity
 	 * @return
 	 */
-	public static <CARRIER extends IndicatorComputeCarrier<?>>   IndicatorCalculator<CARRIER, Double> buildCalculator(int capacity,int indicatorSetScale) {
+	public static <CARRIER extends IndicatorCalculateCarrier<?>>   IndicatorCalculator<CARRIER, Double> buildCalculator(int capacity,int indicatorSetScale) {
 		return new EMACalculator<>(capacity,indicatorSetScale);
 	}
 
@@ -68,7 +68,7 @@ public class EMA extends Indicator {
 	 * 计算器
 	 * @author Rootfive
 	 */
-	private static class EMACalculator<CARRIER extends IndicatorComputeCarrier<?>>  extends IndicatorCalculator<CARRIER, Double> {
+	private static class EMACalculator<CARRIER extends IndicatorCalculateCarrier<?>>  extends IndicatorCalculator<CARRIER, Double> {
 		
 		/** 平滑系数的分子。 α为平滑系数，设定值为（2/n+1); */
 		private final Double α;

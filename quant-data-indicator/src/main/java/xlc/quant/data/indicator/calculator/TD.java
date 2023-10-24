@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import xlc.quant.data.indicator.Indicator;
 import xlc.quant.data.indicator.IndicatorCalculator;
-import xlc.quant.data.indicator.IndicatorComputeCarrier;
+import xlc.quant.data.indicator.IndicatorCalculateCarrier;
 
 
 /**
@@ -30,7 +30,7 @@ public class TD extends Indicator {
 	 * @param capacity
 	 * @return
 	 */
-	public static <CARRIER extends IndicatorComputeCarrier<?>> IndicatorCalculator<CARRIER, Integer> buildCalculator(int capacity, int moveSize) {
+	public static <CARRIER extends IndicatorCalculateCarrier<?>> IndicatorCalculator<CARRIER, Integer> buildCalculator(int capacity, int moveSize) {
 		return new TDCalculator<>(capacity, moveSize);
 	}
 
@@ -39,7 +39,7 @@ public class TD extends Indicator {
 	 * 计算器
 	 * @author Rootfive
 	 */
-	private static class TDCalculator<CARRIER extends IndicatorComputeCarrier<?>> extends IndicatorCalculator<CARRIER, Integer> {
+	private static class TDCalculator<CARRIER extends IndicatorCalculateCarrier<?>> extends IndicatorCalculator<CARRIER, Integer> {
 
 		private final int moveSize;
 
@@ -54,13 +54,13 @@ public class TD extends Indicator {
 
 		@Override
 		protected Integer executeCalculate(Function<CARRIER, Integer> propertyGetter) {
-			if (executeTotal < (1 + moveSize)) {
+			if (size() < (1 + moveSize)) {
 				return null;
 			}
 
 			// 第一根
 			CARRIER head = getHead();
-			CARRIER compareMove = getPrevByNum(moveSize);
+			CARRIER compareMove = get(moveSize);
 			CARRIER prev = getPrev();
 
 			double currentClose = head.getClose();

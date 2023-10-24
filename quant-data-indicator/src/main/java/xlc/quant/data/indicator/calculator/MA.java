@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import xlc.quant.data.indicator.Indicator;
 import xlc.quant.data.indicator.IndicatorCalculator;
-import xlc.quant.data.indicator.IndicatorComputeCarrier;
+import xlc.quant.data.indicator.IndicatorCalculateCarrier;
 import xlc.quant.data.indicator.util.DoubleUtils;
 
 /**
@@ -34,7 +34,7 @@ public class MA extends Indicator {
 	 * @param indicatorSetScale        指标精度
 	 * @return
 	 */
-	public static <CARRIER extends IndicatorComputeCarrier<?>>  IndicatorCalculator<CARRIER, Double> buildCalculator(int capacity,int indicatorSetScale) {
+	public static <CARRIER extends IndicatorCalculateCarrier<?>>  IndicatorCalculator<CARRIER, Double> buildCalculator(int capacity,int indicatorSetScale) {
 		return new MACalculator<>(capacity,indicatorSetScale);
 	}
 
@@ -42,7 +42,7 @@ public class MA extends Indicator {
 	 * 内部类实现MA计算器
 	 * @author Rootfive
 	 */
-	private static class MACalculator<CARRIER extends IndicatorComputeCarrier<?>>  extends IndicatorCalculator<CARRIER, Double> {
+	private static class MACalculator<CARRIER extends IndicatorCalculateCarrier<?>>  extends IndicatorCalculator<CARRIER, Double> {
 		/** 指标精度 */
 		private final int indicatorSetScale;
 		
@@ -57,10 +57,10 @@ public class MA extends Indicator {
 		@Override
 		protected Double executeCalculate(Function<CARRIER, Double> propertyGetter) {
 			double closeSumValue = DoubleUtils.ZERO;
-			for (int i = 0; i < carrierData.length; i++) {
-				closeSumValue = closeSumValue+ getPrevByNum(i).getClose();
+			for (int i = 0; i < size(); i++) {
+				closeSumValue = closeSumValue+ get(i).getClose();
 			}
-			return DoubleUtils.divide(closeSumValue, circularPeriod, indicatorSetScale);
+			return DoubleUtils.divide(closeSumValue, size(), indicatorSetScale);
 		}
 	}
 

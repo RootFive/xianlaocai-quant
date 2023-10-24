@@ -17,7 +17,7 @@ import xlc.quant.data.indicator.calculator.MACD;
 import xlc.quant.data.indicator.calculator.RSI;
 import xlc.quant.data.indicator.calculator.TD;
 import xlc.quant.data.indicator.calculator.WR;
-import xlc.quant.data.indicator.calculator.innovate.TOPMV;
+import xlc.quant.data.indicator.calculator.innovate.XlcTOPMV;
 
 public class CoinTest {
     public static void main(String[] args) {
@@ -54,9 +54,9 @@ public class CoinTest {
     	
     	//技术指标===单值指标 XXX
     	//TOPMV-计算器
-    	IndicatorCalculator<CoinIndicatorCarrierDomain,TOPMV> topmvCalculator20_3 = TOPMV.buildCalculator(20, 3,2,2);
-    	IndicatorCalculator<CoinIndicatorCarrierDomain,TOPMV> topmvCalculator30_4 = TOPMV.buildCalculator(30, 4,2,2);
-    	IndicatorCalculator<CoinIndicatorCarrierDomain,TOPMV> topmvCalculator60_5 = TOPMV.buildCalculator(60, 5,2,2);
+    	IndicatorCalculator<CoinIndicatorCarrierDomain,XlcTOPMV> topmvCalculator20_3 = XlcTOPMV.buildCalculator(20, 3,2,2);
+    	IndicatorCalculator<CoinIndicatorCarrierDomain,XlcTOPMV> topmvCalculator30_4 = XlcTOPMV.buildCalculator(30, 4,2,2);
+    	IndicatorCalculator<CoinIndicatorCarrierDomain,XlcTOPMV> topmvCalculator60_5 = XlcTOPMV.buildCalculator(60, 5,2,2);
     	
 
     	//MA-计算器: 移动平均线
@@ -98,57 +98,59 @@ public class CoinTest {
 		//上一份日报(下面的循环变量)
 		for (CoinIndicatorCarrierDomain current : listStockDailyOrderByTradeDateAsc) {
 			//技术指标===多值指标 XXX
+			//技术指标===多值指标 XXX
 			//KDJ-计算
-			kdjCalculator.input(current,CoinIndicatorCarrierDomain::getKdj,i ->current.setKdj(i));
+			kdjCalculator.input(current,CoinIndicatorCarrierDomain::getKdj,CoinIndicatorCarrierDomain::setKdj);
+			kdjCalculator.input(current,CoinIndicatorCarrierDomain::getKdj,CoinIndicatorCarrierDomain::setKdj);
 			//MACD-计算
-			macdCalculator.input(current,CoinIndicatorCarrierDomain::getMacd,i ->current.setMacd(i));
+			macdCalculator.input(current,CoinIndicatorCarrierDomain::getMacd,CoinIndicatorCarrierDomain::setMacd);
 			//BOLL-计算
-			bollCalculator.input(current,CoinIndicatorCarrierDomain::getBoll,i ->current.setBoll(i));
+			bollCalculator.input(current,CoinIndicatorCarrierDomain::getBoll,CoinIndicatorCarrierDomain::setBoll);
 			//TD九转序列-计算
-			tdCalculator.input(current,CoinIndicatorCarrierDomain::getTd,i ->current.setTd(i));
+			tdCalculator.input(current,CoinIndicatorCarrierDomain::getTd,CoinIndicatorCarrierDomain::setTd);
 			//TD九转序列-计算
-			dmiCalculator.input(current,CoinIndicatorCarrierDomain::getDmi,i ->current.setDmi(i));
+			dmiCalculator.input(current,CoinIndicatorCarrierDomain::getDmi,CoinIndicatorCarrierDomain::setDmi);
 			
 			
 			//技术指标===单值指标 XXX
 			//TOPMV-计算
-			topmvCalculator20_3.input(current,CoinIndicatorCarrierDomain::getTop3In20,i ->current.setTop3In20(i));
-			topmvCalculator30_4.input(current,CoinIndicatorCarrierDomain::getTop4In30,i ->current.setTop4In30(i));
-			topmvCalculator60_5.input(current,CoinIndicatorCarrierDomain::getTop5In60,i ->current.setTop5In60(i));
+			topmvCalculator20_3.input(current,CoinIndicatorCarrierDomain::getTop3In20,CoinIndicatorCarrierDomain::setTop3In20);
+			topmvCalculator30_4.input(current,CoinIndicatorCarrierDomain::getTop4In30,CoinIndicatorCarrierDomain::setTop4In30);
+			topmvCalculator60_5.input(current,CoinIndicatorCarrierDomain::getTop5In60,CoinIndicatorCarrierDomain::setTop5In60);
 
 			
 			//MA-计算
-			ma5Calculator.input(current, CoinIndicatorCarrierDomain::getMa5,i ->current.setMa5(i));
-			ma10Calculator.input(current, CoinIndicatorCarrierDomain::getMa10,i ->current.setMa10(i));
-			ma20Calculator.input(current, CoinIndicatorCarrierDomain::getMa20,i ->current.setMa20(i));
-			ma40Calculator.input(current, CoinIndicatorCarrierDomain::getMa40,i ->current.setMa40(i));
-			ma60Calculator.input(current, CoinIndicatorCarrierDomain::getMa60,i ->current.setMa60(i));
+			ma5Calculator.input(current, CoinIndicatorCarrierDomain::getMa5,CoinIndicatorCarrierDomain::setMa5);
+			ma10Calculator.input(current, CoinIndicatorCarrierDomain::getMa10,CoinIndicatorCarrierDomain::setMa10);
+			ma20Calculator.input(current, CoinIndicatorCarrierDomain::getMa20,CoinIndicatorCarrierDomain::setMa20);
+			ma40Calculator.input(current, CoinIndicatorCarrierDomain::getMa40,CoinIndicatorCarrierDomain::setMa40);
+			ma60Calculator.input(current, CoinIndicatorCarrierDomain::getMa60,CoinIndicatorCarrierDomain::setMa60);
 			
 			//EMA-计算
-			ema5Calculator.input(current, CoinIndicatorCarrierDomain::getEma5,i ->current.setEma5(i));
-			ema10Calculator.input(current, CoinIndicatorCarrierDomain::getEma10,i ->current.setEma10(i));
-			ema20Calculator.input(current, CoinIndicatorCarrierDomain::getEma20,i ->current.setEma20(i));
-			ema60Calculator.input(current, CoinIndicatorCarrierDomain::getEma60,i ->current.setEma60(i));
+			ema5Calculator.input(current, CoinIndicatorCarrierDomain::getEma5,CoinIndicatorCarrierDomain::setEma5);
+			ema10Calculator.input(current, CoinIndicatorCarrierDomain::getEma10,CoinIndicatorCarrierDomain::setEma10);
+			ema20Calculator.input(current, CoinIndicatorCarrierDomain::getEma20,CoinIndicatorCarrierDomain::setEma20);
+			ema60Calculator.input(current, CoinIndicatorCarrierDomain::getEma60,CoinIndicatorCarrierDomain::setEma60);
 
 			//RSI-计算
-			rsi6Calculator.input(current, CoinIndicatorCarrierDomain::getRsi6,i ->current.setRsi6(i));
-			rsi12Calculator.input(current, CoinIndicatorCarrierDomain::getRsi12,i ->current.setRsi12(i));
-			rsi24Calculator.input(current, CoinIndicatorCarrierDomain::getRsi24,i ->current.setRsi24(i));
+			rsi6Calculator.input(current, CoinIndicatorCarrierDomain::getRsi6,CoinIndicatorCarrierDomain::setRsi6);
+			rsi12Calculator.input(current, CoinIndicatorCarrierDomain::getRsi12,CoinIndicatorCarrierDomain::setRsi12);
+			rsi24Calculator.input(current, CoinIndicatorCarrierDomain::getRsi24,CoinIndicatorCarrierDomain::setRsi24);
 					
 
 			//BIAS-计算
-			bias6Calculator.input(current,CoinIndicatorCarrierDomain::getBias6,i ->current.setBias6(i));
-			bias12Calculator.input(current,CoinIndicatorCarrierDomain::getBias12,i ->current.setBias12(i));
-			bias24Calculator.input(current,CoinIndicatorCarrierDomain::getBias24,i ->current.setBias24(i));
+			bias6Calculator.input(current,CoinIndicatorCarrierDomain::getBias6,CoinIndicatorCarrierDomain::setBias6);
+			bias12Calculator.input(current,CoinIndicatorCarrierDomain::getBias12,CoinIndicatorCarrierDomain::setBias12);
+			bias24Calculator.input(current,CoinIndicatorCarrierDomain::getBias24,CoinIndicatorCarrierDomain::setBias24);
 
 			//CCI-计算
-			cci14Calculator.input(current,CoinIndicatorCarrierDomain::getCci14,i ->current.setCci14(i));
+			cci14Calculator.input(current,CoinIndicatorCarrierDomain::getCci14,CoinIndicatorCarrierDomain::setCci14);
 
 			//WR-计算
-			wr6Calculator.input(current,CoinIndicatorCarrierDomain::getWr6,i ->current.setWr6(i));
-			wr10Calculator.input(current,CoinIndicatorCarrierDomain::getWr10,i ->current.setWr10(i));
-			wr14Calculator.input(current,CoinIndicatorCarrierDomain::getWr14,i ->current.setWr14(i));
-			wr20Calculator.input(current,CoinIndicatorCarrierDomain::getWr20,i ->current.setWr20(i));
+			wr6Calculator.input(current,CoinIndicatorCarrierDomain::getWr6,CoinIndicatorCarrierDomain::setWr6);
+			wr10Calculator.input(current,CoinIndicatorCarrierDomain::getWr10,CoinIndicatorCarrierDomain::setWr10);
+			wr14Calculator.input(current,CoinIndicatorCarrierDomain::getWr14,CoinIndicatorCarrierDomain::setWr14);
+			wr20Calculator.input(current,CoinIndicatorCarrierDomain::getWr20,CoinIndicatorCarrierDomain::setWr20);
 			
 
 		}

@@ -7,7 +7,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import xlc.quant.data.indicator.Indicator;
 import xlc.quant.data.indicator.IndicatorCalculator;
-import xlc.quant.data.indicator.IndicatorComputeCarrier;
+import xlc.quant.data.indicator.IndicatorCalculateCarrier;
 import xlc.quant.data.indicator.util.DoubleUtils;
 
 /**
@@ -64,7 +64,7 @@ public class DMI extends Indicator {
 	 * @param adxPeriod
 	 * @return
 	 */
-	public static <CARRIER extends IndicatorComputeCarrier<?>> IndicatorCalculator<CARRIER, DMI> buildCalculator(int diPeriod, int adxPeriod) {
+	public static <CARRIER extends IndicatorCalculateCarrier<?>> IndicatorCalculator<CARRIER, DMI> buildCalculator(int diPeriod, int adxPeriod) {
 		return new DMICalculator<>(diPeriod, adxPeriod);
 	}
 	
@@ -73,7 +73,7 @@ public class DMI extends Indicator {
 	 * 内部类实现DMI计算器
 	 * @author Rootfive
 	 */
-	private static class DMICalculator<CARRIER extends IndicatorComputeCarrier<?>> extends IndicatorCalculator<CARRIER, DMI> {
+	private static class DMICalculator<CARRIER extends IndicatorCalculateCarrier<?>> extends IndicatorCalculator<CARRIER, DMI> {
 		
 		/** 趋向周期 */
 		private final int adxPeriod;
@@ -129,8 +129,8 @@ public class DMI extends Indicator {
 			double dmpSum = dmiHead.getDmp();
 			double dmmSum = dmiHead.getDmm();
 			
-			for (int i = 1; i < carrierData.length; i++) {
-				CARRIER carrier_i = getPrevByNum(i);
+			for (int i = 1; i < capacity(); i++) {
+				CARRIER carrier_i = get(i);
 				if (carrier_i !=null) {
 					DMI dmi_i = propertyGetter.apply(carrier_i);
 					trSum= trSum+dmi_i.getTr();
@@ -162,13 +162,13 @@ public class DMI extends Indicator {
 			
 			dmiHead.setDx(dx);
 
-			if (executeTotal <= adxPeriod) {
+			if (size() <= adxPeriod) {
 				return dmiHead;
 			}
 			
 			double dxSum =  dmiHead.getDx();
 			for (int i = 1; i < adxPeriod; i++) {
-				DMI dmi_i = propertyGetter.apply(getPrevByNum(i));
+				DMI dmi_i = propertyGetter.apply(get(i));
 				dxSum = dxSum+dmi_i.getDx();
 			}
 			
@@ -176,7 +176,7 @@ public class DMI extends Indicator {
 			dmiHead.setAdx(adx);
 
 			Double adxr = null;
-			Double adxByPrevAdxPeriod = propertyGetter.apply(getPrevByNum(adxPeriod)).getAdx();
+			Double adxByPrevAdxPeriod = propertyGetter.apply(get(adxPeriod)).getAdx();
 			if (adxByPrevAdxPeriod != null) {
 				adxr = DoubleUtils.divide(adx+adxByPrevAdxPeriod, 2, 2);
 			}

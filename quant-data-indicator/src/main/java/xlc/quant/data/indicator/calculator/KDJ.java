@@ -7,7 +7,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import xlc.quant.data.indicator.Indicator;
 import xlc.quant.data.indicator.IndicatorCalculator;
-import xlc.quant.data.indicator.IndicatorComputeCarrier;
+import xlc.quant.data.indicator.IndicatorCalculateCarrier;
 import xlc.quant.data.indicator.util.DoubleUtils;
 
 
@@ -68,7 +68,7 @@ public class KDJ extends Indicator {
 	 * @param capacity
 	 * @return
 	 */
-	public static <CARRIER extends IndicatorComputeCarrier<?>>  IndicatorCalculator<CARRIER, KDJ> buildCalculator(int capacity, int kCycle, int dCycle) {
+	public static <CARRIER extends IndicatorCalculateCarrier<?>>  IndicatorCalculator<CARRIER, KDJ> buildCalculator(int capacity, int kCycle, int dCycle) {
 		return new KDJCalculator<>(capacity, kCycle, dCycle);
 	}
 
@@ -76,7 +76,7 @@ public class KDJ extends Indicator {
 	 * 计算器
 	 * @author Rootfive
 	 */
-	private static class KDJCalculator<CARRIER extends IndicatorComputeCarrier<?>> extends IndicatorCalculator<CARRIER, KDJ> {
+	private static class KDJCalculator<CARRIER extends IndicatorCalculateCarrier<?>> extends IndicatorCalculator<CARRIER, KDJ> {
 		/** K值的计算周期 */
 		private final int kCycle;
 
@@ -105,8 +105,8 @@ public class KDJ extends Indicator {
 			double valueHn = headData.getHigh();
 			// Ln为n日内的最低价
 			double valueLn = headData.getLow();
-			for (int i = 1; i < carrierData.length; i++) {
-				CARRIER carrier_i = getPrevByNum(i);
+			for (int i = 1; i < capacity(); i++) {
+				CARRIER carrier_i = get(i);
 				valueHn = Math.max(valueHn, carrier_i.getHigh());
 				valueLn = Math.min(valueLn, carrier_i.getLow());
 			}

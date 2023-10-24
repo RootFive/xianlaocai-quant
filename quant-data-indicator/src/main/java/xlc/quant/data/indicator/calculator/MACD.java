@@ -7,7 +7,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import xlc.quant.data.indicator.Indicator;
 import xlc.quant.data.indicator.IndicatorCalculator;
-import xlc.quant.data.indicator.IndicatorComputeCarrier;
+import xlc.quant.data.indicator.IndicatorCalculateCarrier;
 import xlc.quant.data.indicator.util.DoubleUtils;
 
 /**
@@ -57,7 +57,7 @@ public class MACD extends Indicator {
 	 * @param difCycle
 	 * @return
 	 */
-	public static <CARRIER extends IndicatorComputeCarrier<?>> IndicatorCalculator<CARRIER, MACD> buildCalculator(int fastCycle, int slowCycle, int difCycle,int indicatorSetScale) {
+	public static <CARRIER extends IndicatorCalculateCarrier<?>> IndicatorCalculator<CARRIER, MACD> buildCalculator(int fastCycle, int slowCycle, int difCycle,int indicatorSetScale) {
 		return new MACDCalculator<>(fastCycle, slowCycle, difCycle,indicatorSetScale);
 	}
 
@@ -65,7 +65,7 @@ public class MACD extends Indicator {
 	 * 计算器
 	 * @author Rootfive
 	 */
-	private static class MACDCalculator<CARRIER extends IndicatorComputeCarrier<?>> extends IndicatorCalculator<CARRIER, MACD> {
+	private static class MACDCalculator<CARRIER extends IndicatorCalculateCarrier<?>> extends IndicatorCalculator<CARRIER, MACD> {
 		
 		/** 快线平滑系数 设定值为（2/n+1); */
 		private final Double fastEMA_α;

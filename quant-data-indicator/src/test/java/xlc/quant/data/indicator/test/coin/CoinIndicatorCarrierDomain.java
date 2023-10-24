@@ -1,27 +1,30 @@
 package xlc.quant.data.indicator.test.coin;
 
 import lombok.Data;
-import xlc.quant.data.indicator.IndicatorComputeCarrier;
+import xlc.quant.data.indicator.IndicatorCalculateCarrier;
 import xlc.quant.data.indicator.calculator.BOLL;
 import xlc.quant.data.indicator.calculator.CCI;
 import xlc.quant.data.indicator.calculator.DMI;
 import xlc.quant.data.indicator.calculator.KDJ;
 import xlc.quant.data.indicator.calculator.MACD;
 import xlc.quant.data.indicator.calculator.RSI;
-import xlc.quant.data.indicator.calculator.innovate.TOPMV;
+import xlc.quant.data.indicator.calculator.innovate.XlcTOPMV;
 
 /**
  * @author Rootfive
  * 指标载体
  */
 @Data
-public class CoinIndicatorCarrierDomain implements IndicatorComputeCarrier<Long> {
+public class CoinIndicatorCarrierDomain implements IndicatorCalculateCarrier<Long> {
 
+	/** 交易代码 */
+	private String symbol;
+	
 	/** 收盘时间戳 */
 	private Long closeTime;
 
 	/** 交易时间戳 */
-	private Long tradeTime;
+	private Long timestamp;
 
 	/** 开盘价 */
 	private double open;
@@ -88,13 +91,13 @@ public class CoinIndicatorCarrierDomain implements IndicatorComputeCarrier<Long>
 	//技术指标===单值指标 XXX
 	/** TOPMV */
     /** 20取3    */
-	private TOPMV top3In20;
+	private XlcTOPMV top3In20;
 	
 	/** 30取4    */
-	private TOPMV top4In30;
+	private XlcTOPMV top4In30;
 	
 	/** 60取5    */
-	private TOPMV top5In60;
+	private XlcTOPMV top5In60;
 	
 	
 	
@@ -167,5 +170,4 @@ public class CoinIndicatorCarrierDomain implements IndicatorComputeCarrier<Long>
 
     /** 威廉20 */
     protected Double wr20;
-
 }

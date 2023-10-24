@@ -10,7 +10,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import xlc.quant.data.indicator.Indicator;
 import xlc.quant.data.indicator.IndicatorCalculator;
-import xlc.quant.data.indicator.IndicatorComputeCarrier;
+import xlc.quant.data.indicator.IndicatorCalculateCarrier;
 import xlc.quant.data.indicator.util.DoubleUtils;
 
 /**
@@ -19,7 +19,7 @@ import xlc.quant.data.indicator.util.DoubleUtils;
 @Data
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public class TOPMV extends Indicator {
+public class XlcTOPMV extends Indicator {
 
 	/** 成交额-最高值-前X个均值 */
 	private Double ath;
@@ -31,7 +31,7 @@ public class TOPMV extends Indicator {
 	/** 成交量-最低值-前X个均值 */
 	private Double vtl;
 
-	public TOPMV(double ath, double atl, double vth, double vtl) {
+	public XlcTOPMV(double ath, double atl, double vth, double vtl) {
 		super();
 		this.ath = ath;
 		this.atl = atl;
@@ -49,15 +49,15 @@ public class TOPMV extends Indicator {
 	 * @param indicatorVolumeSetScale  指标Volume精度
 	 * @return
 	 */
-	public static <CARRIER extends IndicatorComputeCarrier<?>> IndicatorCalculator<CARRIER, TOPMV> buildCalculator(int capacity, int top,int indicatorAmountSetScale,int indicatorVolumeSetScale) {
-		return  new TOPMVCalculator<>(capacity,  top, indicatorAmountSetScale, indicatorVolumeSetScale);
+	public static <CARRIER extends IndicatorCalculateCarrier<?>> IndicatorCalculator<CARRIER, XlcTOPMV> buildCalculator(int capacity, int top,int indicatorAmountSetScale,int indicatorVolumeSetScale) {
+		return  new XlcTOPMVCalculator<>(capacity,  top, indicatorAmountSetScale, indicatorVolumeSetScale);
     }
 
 	/**
 	 * 计算器
 	 * @author Rootfive
 	 */
-	private static class TOPMVCalculator<CARRIER extends IndicatorComputeCarrier<?>>  extends IndicatorCalculator<CARRIER, TOPMV> {
+	private static class XlcTOPMVCalculator<CARRIER extends IndicatorCalculateCarrier<?>>  extends IndicatorCalculator<CARRIER, XlcTOPMV> {
 
 		private final int top;
 		/** 指标Amount精度 */
@@ -71,7 +71,7 @@ public class TOPMV extends Indicator {
 		 * @param indicatorAmountSetScale  指标Amount精度
 		 * @param indicatorVolumeSetScale  指标Volume精度
 		 */
-		TOPMVCalculator(int capacity, int top,int indicatorAmountSetScale,int indicatorVolumeSetScale) {
+		XlcTOPMVCalculator(int capacity, int top,int indicatorAmountSetScale,int indicatorVolumeSetScale) {
 			super(capacity, true);
 			this.top = top;
 			this.indicatorAmountSetScale = indicatorAmountSetScale;
@@ -82,15 +82,15 @@ public class TOPMV extends Indicator {
 		 *
 		 */
 		@Override
-		protected TOPMV executeCalculate(Function<CARRIER, TOPMV> propertyGetter) {
+		protected XlcTOPMV executeCalculate(Function<CARRIER, XlcTOPMV> propertyGetter) {
 			// 成交额-所有
-			List<Double> listAmount = new ArrayList<>(carrierData.length);
+			List<Double> listAmount = new ArrayList<>(capacity());
 			// 成交量-所有
-			List<Double> listVolume = new ArrayList<>(carrierData.length);
+			List<Double> listVolume = new ArrayList<>(capacity());
 			
 			
-			for (int i = 0; i < carrierData.length; i++) {
-				CARRIER carrier_i = getPrevByNum(i);
+			for (int i = 0; i < capacity(); i++) {
+				CARRIER carrier_i = get(i);
 				listAmount.add(carrier_i.getAmount());
 				listVolume.add(carrier_i.getVolume());
 			}
@@ -116,7 +116,7 @@ public class TOPMV extends Indicator {
 			/** 成交量-最低值-前X个均值 */
 			Double vtl = DoubleUtils.divide(naturalOrderSumVolume, top, indicatorVolumeSetScale);
 			
-			return new TOPMV(ath, atl, vth, vtl);
+			return new XlcTOPMV(ath, atl, vth, vtl);
 			
 		}
 

@@ -7,7 +7,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import xlc.quant.data.indicator.Indicator;
 import xlc.quant.data.indicator.IndicatorCalculator;
-import xlc.quant.data.indicator.IndicatorComputeCarrier;
+import xlc.quant.data.indicator.IndicatorCalculateCarrier;
 import xlc.quant.data.indicator.util.DoubleUtils;
 
 /**
@@ -60,7 +60,7 @@ public class RSI extends Indicator {
 	 * @param capacity
 	 * @return
 	 */
-	public static <CARRIER extends IndicatorComputeCarrier<?>> IndicatorCalculator<CARRIER, RSI> buildCalculator(int capacity) {
+	public static <CARRIER extends IndicatorCalculateCarrier<?>> IndicatorCalculator<CARRIER, RSI> buildCalculator(int capacity) {
 		return new RSICalculator<>(capacity);
 	}
 
@@ -68,7 +68,7 @@ public class RSI extends Indicator {
 	 * 计算器
 	 * @author Rootfive
 	 */
-	private static class RSICalculator<CARRIER extends IndicatorComputeCarrier<?>> extends IndicatorCalculator<CARRIER, RSI> {
+	private static class RSICalculator<CARRIER extends IndicatorCalculateCarrier<?>> extends IndicatorCalculator<CARRIER, RSI> {
 
 		private final double α;
 		private final double β;
@@ -95,8 +95,8 @@ public class RSI extends Indicator {
 				// 跌额之和
 				double sumDown = DoubleUtils.ZERO;
 				
-				for (int i = 0; i < carrierData.length; i++) {
-					CARRIER carrier_i = getPrevByNum(i);
+				for (int i = 0; i < capacity(); i++) {
+					CARRIER carrier_i = get(i);
 					Double changePrice = carrier_i.getPriceChange();
 					// 涨幅之和累加
 					if (changePrice > DoubleUtils.ZERO) {
@@ -106,8 +106,8 @@ public class RSI extends Indicator {
 					}
 				}
 
-				emaUp = DoubleUtils.divide(sumUp, circularPeriod, DoubleUtils.MAX_SCALE);
-				emaDown = DoubleUtils.divide(sumDown, circularPeriod, DoubleUtils.MAX_SCALE);
+				emaUp = DoubleUtils.divide(sumUp, capacity(), DoubleUtils.MAX_SCALE);
+				emaDown = DoubleUtils.divide(sumDown, capacity(), DoubleUtils.MAX_SCALE);
 			} else {
 				Double prevEmaUp = prevRSI.getEmaUp();
 				Double prevEmaDown = prevRSI.getEmaDown();

@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import xlc.quant.data.indicator.Indicator;
 import xlc.quant.data.indicator.IndicatorCalculator;
-import xlc.quant.data.indicator.IndicatorComputeCarrier;
+import xlc.quant.data.indicator.IndicatorCalculateCarrier;
 import xlc.quant.data.indicator.util.DoubleUtils;
 
 /**
@@ -37,7 +37,7 @@ public class BIAS extends Indicator {
 	 * @param capacity
 	 * @return
 	 */
-	public static <CARRIER extends IndicatorComputeCarrier<?>> IndicatorCalculator<CARRIER,Double> buildCalculator(int capacity) {
+	public static <CARRIER extends IndicatorCalculateCarrier<?>> IndicatorCalculator<CARRIER,Double> buildCalculator(int capacity) {
 		return new BIASCalculator<>(capacity);
 	}
 
@@ -46,7 +46,7 @@ public class BIAS extends Indicator {
 	 * 
 	 * @author Rootfive
 	 */
-	private static class BIASCalculator<CARRIER extends IndicatorComputeCarrier<?>> extends IndicatorCalculator<CARRIER,Double> {
+	private static class BIASCalculator<CARRIER extends IndicatorCalculateCarrier<?>> extends IndicatorCalculator<CARRIER,Double> {
 
 		/**
 		 * @param capacity
@@ -61,11 +61,11 @@ public class BIAS extends Indicator {
 			// 当前使用价格
 			double currentUsePrice = head.getClose();
 			double sumValue = head.getClose();
-			for (int i = 1; i < carrierData.length; i++) {
-				sumValue = sumValue+getPrevByNum(i).getClose();
+			for (int i = 1; i < capacity(); i++) {
+				sumValue = sumValue+get(i).getClose();
 			}
 			// 缓冲区内所有 平均值
-			Double ma = DoubleUtils.divide(sumValue, circularPeriod, DoubleUtils.MAX_SCALE);
+			Double ma = DoubleUtils.divide(sumValue, capacity(), DoubleUtils.MAX_SCALE);
 			// 计算公式：BIAS 乖离率=（当日收盘价-N日内移动平均价）/N日内移动平均价╳100%
 			return DoubleUtils.divideByPct(currentUsePrice-ma, ma);
 			

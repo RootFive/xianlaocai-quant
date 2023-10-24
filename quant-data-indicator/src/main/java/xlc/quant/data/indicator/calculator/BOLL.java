@@ -7,7 +7,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import xlc.quant.data.indicator.Indicator;
 import xlc.quant.data.indicator.IndicatorCalculator;
-import xlc.quant.data.indicator.IndicatorComputeCarrier;
+import xlc.quant.data.indicator.IndicatorCalculateCarrier;
 import xlc.quant.data.indicator.util.DoubleUtils;
 
 /**
@@ -63,7 +63,7 @@ public class BOLL extends Indicator {
 	 * @param indicatorSetScale        指标精度
 	 * @return
 	 */
-	public static <CARRIER extends IndicatorComputeCarrier<?>> IndicatorCalculator<CARRIER,BOLL> buildCalculator(int capacity, double k,int indicatorSetScale) {
+	public static <CARRIER extends IndicatorCalculateCarrier<?>> IndicatorCalculator<CARRIER,BOLL> buildCalculator(int capacity, double k,int indicatorSetScale) {
 		return new BOLLCalculator<>(capacity, k, indicatorSetScale);
 	}
 
@@ -71,7 +71,7 @@ public class BOLL extends Indicator {
 	 * BOLL计算器
 	 * @author Rootfive
 	 */
-	private static class BOLLCalculator<CARRIER extends IndicatorComputeCarrier<?>> extends IndicatorCalculator<CARRIER,BOLL> {
+	private static class BOLLCalculator<CARRIER extends IndicatorCalculateCarrier<?>> extends IndicatorCalculator<CARRIER,BOLL> {
 		/** K为参数，可根据股票的特性来做相应的调整，一般默认为2 */
 		private static final double DEFAULT_K = 2;
 		/** 布林线指标的参数N,指的是K线的个数,默认20 */
@@ -103,14 +103,14 @@ public class BOLL extends Indicator {
 
 			// 求收盘价 平均值
 			double sumClose = head.getClose();
-			for (int i = 1; i < carrierData.length; i++) {
-				sumClose =  sumClose+ getPrevByNum(i).getClose();
+			for (int i = 1; i < capacity(); i++) {
+				sumClose =  sumClose+ get(i).getClose();
 			}
 			// 收盘价 平均值
-			Double closeMA = sumClose/carrierData.length;
+			Double closeMA = sumClose/capacity();
 			
 			// BOLL线
-			if (!isFullCapacity()) {
+			if (!isFull()) {
 				return null;
 			}
 
@@ -118,8 +118,8 @@ public class BOLL extends Indicator {
 			// 2.1 计算方差
 			Double varianceS2 = DoubleUtils.ZERO;
 			
-			for (int i = 0; i < carrierData.length; i++) {
-				CARRIER carrier_i = getPrevByNum(i);
+			for (int i = 0; i < capacity(); i++) {
+				CARRIER carrier_i = get(i);
 				// 差值
 				Double DValue = carrier_i.getClose() -closeMA;
 				// 差值的平方只和
@@ -127,7 +127,7 @@ public class BOLL extends Indicator {
 			}
 			
 			// 方差
-			Double variance = DoubleUtils.divide(varianceS2,circularPeriod, DoubleUtils.MAX_SCALE);
+			Double variance = DoubleUtils.divide(varianceS2,capacity(), DoubleUtils.MAX_SCALE);
 			// 标准差
 			Double MD = Math.sqrt(variance);
 

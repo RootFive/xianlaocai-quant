@@ -7,7 +7,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import xlc.quant.data.indicator.Indicator;
 import xlc.quant.data.indicator.IndicatorCalculator;
-import xlc.quant.data.indicator.IndicatorComputeCarrier;
+import xlc.quant.data.indicator.IndicatorCalculateCarrier;
 import xlc.quant.data.indicator.util.DoubleUtils;
 
 /**
@@ -62,7 +62,7 @@ public class CCI extends Indicator {
 	 * @param assistIndicatorSetScale  辅助指标精度
 	 * @return
 	 */
-	public static <CARRIER extends IndicatorComputeCarrier<?>> IndicatorCalculator<CARRIER, CCI> buildCalculator(int capacity,int indicatorSetScale) {
+	public static <CARRIER extends IndicatorCalculateCarrier<?>> IndicatorCalculator<CARRIER, CCI> buildCalculator(int capacity,int indicatorSetScale) {
 		return new CCICalculator<>(capacity, indicatorSetScale);
 	}
 
@@ -70,7 +70,7 @@ public class CCI extends Indicator {
 	 * 计算器
 	 * @author Rootfive
 	 */
-	private static class CCICalculator<CARRIER extends IndicatorComputeCarrier<?>> extends IndicatorCalculator<CARRIER, CCI> {
+	private static class CCICalculator<CARRIER extends IndicatorCalculateCarrier<?>> extends IndicatorCalculator<CARRIER, CCI> {
 
 		/** 
 		 * <pre>
@@ -95,30 +95,30 @@ public class CCI extends Indicator {
 		protected CCI executeCalculate(Function<CARRIER, CCI> propertyGetter) {
 			CARRIER head = getHead();
 			Double tp = DoubleUtils.average(DoubleUtils.MAX_SCALE,head.getHigh(),head.getLow(),head.getClose());
-			if (!isFullCapacity()) {
+			if (!isFull()) {
 				return new CCI(tp);
 			}
 			
 			
 			Double tpSumValueForMD = tp;
-			for (int i = 1; i < carrierData.length; i++) {
-				CARRIER carrier_i = getPrevByNum(i);
+			for (int i = 1; i < capacity(); i++) {
+				CARRIER carrier_i = get(i);
 				CCI cci_i = propertyGetter.apply(carrier_i);
 				if (cci_i !=null) {
 					tpSumValueForMD = tpSumValueForMD + cci_i.getTp();
 				}
 			}
-			Double ma = DoubleUtils.divide(tpSumValueForMD, circularPeriod, DoubleUtils.MAX_SCALE);
+			Double ma = DoubleUtils.divide(tpSumValueForMD, capacity(), DoubleUtils.MAX_SCALE);
 			
 			Double sumValueForMD = DoubleUtils.ZERO;
-			for (int i = 0; i < carrierData.length; i++) {
-				CARRIER carrier_i = getPrevByNum(i);
+			for (int i = 0; i < capacity(); i++) {
+				CARRIER carrier_i = get(i);
 
 				CCI cci_i = propertyGetter.apply(carrier_i);
 				Double tp_i = cci_i !=null ?cci_i.getTp():tp;
 				sumValueForMD = sumValueForMD + Math.abs(ma -tp_i);
 			}
-			Double md = DoubleUtils.divide(sumValueForMD, circularPeriod, DoubleUtils.MAX_SCALE);
+			Double md = DoubleUtils.divide(sumValueForMD, capacity(), DoubleUtils.MAX_SCALE);
 			
 			Double cciValue = DoubleUtils.divide(DoubleUtils.divide(tp-ma, md, DoubleUtils.MAX_SCALE), multiplier, indicatorSetScale);
 			return new CCI(tp, cciValue);
