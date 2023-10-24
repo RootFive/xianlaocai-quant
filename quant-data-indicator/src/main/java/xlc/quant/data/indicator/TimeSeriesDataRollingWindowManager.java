@@ -10,10 +10,10 @@ public abstract class TimeSeriesDataRollingWindowManager<TSD extends TimeSeriesD
 
 	/**
 	 * 构造
-	 * @param maxWindow 最大窗口数量
+	 * @param maximum 管理滚动窗口的最大数量
 	 */
-	public TimeSeriesDataRollingWindowManager(int maxWindow) {
-		super(maxWindow);
+	public TimeSeriesDataRollingWindowManager(int maximum) {
+		super(maximum);
 	}
 
 	/**

@@ -47,10 +47,7 @@ implementation group: 'com.xianlaocai.quant', name: 'quant-data-indicator', vers
 
 ```
 ### 基表计算示例 
-1.  A股：/quant-data-indicator/src/test/java/xlc/quant/data/indicator/test/stock/StockTest.java
-
-2.  币圈：/quant-data-indicator/src/test/java/xlc/quant/data/indicator/test/coin/CoinTest.java
-
+示例地址：        /quant-data-indicator/src/test/java/xlc/quant/data/indicator/test/DemoTest.java
 
 ## 软件架构
 java最低最低JDK1.8（Java8），Maven聚合父子项目，会逐步开源子模块。

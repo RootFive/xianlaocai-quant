@@ -20,11 +20,11 @@ public class IndicatorCalculateManager<CARRIER extends IndicatorCalculateCarrier
 
 	/**
 	 * 构造
-	 * @param maxCarrier 载体最大数量
+	 * @param maximum 管理载体的最大数量
 	 * @param calculatorConfigList  指标计算器-配置列表
 	 */
-	public IndicatorCalculateManager(int maxCarrier, List<IndicatorCalculatorConfig<CARRIER, ?>> calculatorConfigList) {
-		super(maxCarrier);
+	public IndicatorCalculateManager(int maximum, List<IndicatorCalculatorConfig<CARRIER, ?>> calculatorConfigList) {
+		super(maximum);
 		this.calculatorConfigList = calculatorConfigList;
 	}
 
