@@ -7,7 +7,7 @@ import java.util.List;
  * @author Rootfive
  * @param <CARRIER> 计算载体，该载体是一个时序数据
  */
-public abstract class IndicatorCalculateManager<CARRIER extends IndicatorCalculateCarrier<?>>
+public class IndicatorCalculateManager<CARRIER extends IndicatorCalculateCarrier<?>>
 		extends TimeSeriesDataRollingWindowManager<CARRIER> {
 
 	/** 
