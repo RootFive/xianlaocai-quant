@@ -1,13 +1,14 @@
 package xlc.quant.data.indicator.calculator;
 
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import xlc.quant.data.indicator.Indicator;
-import xlc.quant.data.indicator.IndicatorCalculator;
 import xlc.quant.data.indicator.IndicatorCalculateCarrier;
+import xlc.quant.data.indicator.IndicatorCalculator;
 import xlc.quant.data.indicator.util.DoubleUtils;
 
 
@@ -68,8 +69,8 @@ public class KDJ extends Indicator {
 	 * @param capacity
 	 * @return
 	 */
-	public static <CARRIER extends IndicatorCalculateCarrier<?>>  IndicatorCalculator<CARRIER, KDJ> buildCalculator(int capacity, int kCycle, int dCycle) {
-		return new KDJCalculator<>(capacity, kCycle, dCycle);
+	public static <CARRIER extends IndicatorCalculateCarrier<?>>  IndicatorCalculator<CARRIER, KDJ> buildCalculator(int capacity, int kCycle, int dCycle,BiConsumer<CARRIER, KDJ> propertySetter,Function<CARRIER, KDJ> propertyGetter) {
+		return new KDJCalculator<>(capacity, kCycle, dCycle,propertySetter,propertyGetter);
 	}
 
 	/**
@@ -82,11 +83,14 @@ public class KDJ extends Indicator {
 
 		/** D值的计算周期 */
 		private final int dCycle;
+		
+		private final Function<CARRIER, KDJ> propertyGetter;
 
-		KDJCalculator(int capacity, int kCycle, int dCycle) {
-			super(capacity, true);
+		KDJCalculator(int capacity, int kCycle, int dCycle,BiConsumer<CARRIER, KDJ> propertySetter,Function<CARRIER, KDJ> propertyGetter) {
+			super(capacity, true,propertySetter);
 			this.kCycle = kCycle;
 			this.dCycle = dCycle;
+			this.propertyGetter = propertyGetter;
 		}
 
 		/***
@@ -97,7 +101,7 @@ public class KDJ extends Indicator {
 		 * </pre>
 		 */
 		@Override
-		protected KDJ executeCalculate(Function<CARRIER, KDJ> propertyGetter) {
+		protected KDJ executeCalculate() {
 			CARRIER headData = getHead();
 			// 第收盘价
 			double valueCn = headData.getClose();

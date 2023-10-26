@@ -1,13 +1,14 @@
 package xlc.quant.data.indicator.calculator;
 
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import xlc.quant.data.indicator.Indicator;
-import xlc.quant.data.indicator.IndicatorCalculator;
 import xlc.quant.data.indicator.IndicatorCalculateCarrier;
+import xlc.quant.data.indicator.IndicatorCalculator;
 import xlc.quant.data.indicator.util.DoubleUtils;
 
 /**
@@ -60,8 +61,8 @@ public class RSI extends Indicator {
 	 * @param capacity
 	 * @return
 	 */
-	public static <CARRIER extends IndicatorCalculateCarrier<?>> IndicatorCalculator<CARRIER, RSI> buildCalculator(int capacity) {
-		return new RSICalculator<>(capacity);
+	public static <CARRIER extends IndicatorCalculateCarrier<?>> IndicatorCalculator<CARRIER, RSI> buildCalculator(int capacity,BiConsumer<CARRIER, RSI> propertySetter,Function<CARRIER, RSI> propertyGetter) {
+		return new RSICalculator<>(capacity, propertySetter, propertyGetter);
 	}
 
 	/**
@@ -72,18 +73,20 @@ public class RSI extends Indicator {
 
 		private final double α;
 		private final double β;
+		private final Function<CARRIER, RSI> propertyGetter;
 
 		/**
 		 * @param capacity
 		 */
-		public RSICalculator(int capacity) {
-			super(capacity, true);
+		public RSICalculator(int capacity,BiConsumer<CARRIER, RSI> propertySetter,Function<CARRIER, RSI> propertyGetter) {
+			super(capacity, true,propertySetter);
 			this.α = DoubleUtils.divide(capacity - 1, capacity, DoubleUtils.MAX_SCALE);
 			this.β = 1 - α;
+			this.propertyGetter = propertyGetter;
 		}
 
 		@Override
-		protected RSI executeCalculate(Function<CARRIER, RSI> propertyGetter) {
+		protected RSI executeCalculate() {
 
 			Double emaUp = null;
 			Double emaDown = null;

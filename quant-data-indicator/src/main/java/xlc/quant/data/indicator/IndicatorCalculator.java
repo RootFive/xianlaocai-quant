@@ -1,7 +1,6 @@
 package xlc.quant.data.indicator;
 
 import java.util.function.BiConsumer;
-import java.util.function.Function;
 
 /**
  * 指标计算器-抽象父类
@@ -18,34 +17,36 @@ public abstract class IndicatorCalculator<CARRIER extends IndicatorCalculateCarr
 	 *  使用场景是有些指标必须需要一定数量的载体才能计算，比如:BOLL、KDJ等
 	 *  </pre>
 	 */
-	private final transient boolean isFullCapacityCalculate;
+	private final boolean isFullCapacityCalculate;
+	
+	/** 委托方法，计算结果设置到载体的哪个属性 */
+	private final BiConsumer<CARRIER, INDI> propertySetter;
 
 	/**
 	 * @param period   	周期			
 	 * @param isFullCapacityCalculate  是否满容计算
+	 * @param propertySetter  委托方法，计算结果设置到载体的哪个属性
 	 */
-	public IndicatorCalculator(int period, boolean isFullCapacityCalculate) {
+	public IndicatorCalculator(int period, boolean isFullCapacityCalculate,BiConsumer<CARRIER, INDI> propertySetter) {
 		super(period);
 		this.isFullCapacityCalculate = isFullCapacityCalculate;
+		this.propertySetter = propertySetter;
 	}
 
 	/**
-	 * @param newCarrier 新计算载体
-	 * @param propertyGetter  委托方法，从载体类获取计算结果的方法
-	 * @param propertySetter  委托方法，设置计算结果到载体的哪个属性
+	 * @param enterCarrier 输入的计算载体
 	 * @return
 	 */
-	public synchronized INDI input(CARRIER newCarrier, Function<CARRIER, INDI> propertyGetter,
-			BiConsumer<CARRIER, INDI> propertySetter) {
-		boolean addResult = enqueue(newCarrier);
+	public synchronized INDI input(CARRIER enterCarrier) {
+		boolean addResult = super.enqueue(enterCarrier);
 		if (addResult) {
 			// 新增成功
 			if (!isFullCapacityCalculate || (isFullCapacityCalculate && this.isFull())) {
 				// 二者满足其中一种。均可执行计算，条件：1、不是满容计算 [或] 2满容计算且已经满容，
-				INDI calculateResult = executeCalculate(propertyGetter);
+				INDI calculateResult = executeCalculate();
 				if (propertySetter != null) {
-					//设置计算结果 到 输入新数据[newCarrier]属性值上，做到指标和数据对应
-					propertySetter.accept(newCarrier, calculateResult);
+					//设置计算结果 到 输入新数据[enterCarrier]属性值上，做到指标和数据对应
+					propertySetter.accept(enterCarrier, calculateResult);
 				}
 				return calculateResult;
 			}
@@ -58,7 +59,7 @@ public abstract class IndicatorCalculator<CARRIER extends IndicatorCalculateCarr
 	 * @param propertyGetter  委托方法，从载体类获取计算结果的方法
 	 * @return
 	 */
-	protected abstract INDI executeCalculate(Function<CARRIER, INDI> propertyGetter);
+	protected abstract INDI executeCalculate();
 
 	/**
 	 * @param current  当前值

@@ -1,12 +1,12 @@
 package xlc.quant.data.indicator.calculator;
 
-import java.util.function.Function;
+import java.util.function.BiConsumer;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import xlc.quant.data.indicator.Indicator;
-import xlc.quant.data.indicator.IndicatorCalculator;
 import xlc.quant.data.indicator.IndicatorCalculateCarrier;
+import xlc.quant.data.indicator.IndicatorCalculator;
 import xlc.quant.data.indicator.util.DoubleUtils;
 
 /**
@@ -32,13 +32,13 @@ public class BIAS extends Indicator {
 	//内部类分隔符 XXX
 	//=============
 	/**
-	 * 构建计算器
-	 * 
+	 * @param <CARRIER>
 	 * @param capacity
+	 * @param propertySetter
 	 * @return
 	 */
-	public static <CARRIER extends IndicatorCalculateCarrier<?>> IndicatorCalculator<CARRIER,Double> buildCalculator(int capacity) {
-		return new BIASCalculator<>(capacity);
+	public static <CARRIER extends IndicatorCalculateCarrier<?>> IndicatorCalculator<CARRIER,Double> buildCalculator(int capacity, BiConsumer<CARRIER, Double> propertySetter) {
+		return new BIASCalculator<>(capacity,propertySetter);
 	}
 
 	/**
@@ -50,13 +50,14 @@ public class BIAS extends Indicator {
 
 		/**
 		 * @param capacity
+		 * @param propertySetter
 		 */
-		BIASCalculator(int capacity) {
-			super(capacity, true);
+		BIASCalculator(int capacity, BiConsumer<CARRIER, Double> propertySetter) {
+			super(capacity, true,propertySetter);
 		}
 
 		@Override
-		protected Double executeCalculate(Function<CARRIER, Double> propertyGetter) {
+		protected Double executeCalculate() {
 			CARRIER head = getHead();
 			// 当前使用价格
 			double currentUsePrice = head.getClose();

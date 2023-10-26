@@ -1,5 +1,6 @@
 package xlc.quant.data.indicator.calculator;
 
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 import lombok.AllArgsConstructor;
@@ -40,8 +41,8 @@ public class EMA extends Indicator {
 	 * @param capacity
 	 * @return
 	 */
-	public static <CARRIER extends IndicatorCalculateCarrier<?>>   IndicatorCalculator<CARRIER, Double> buildCalculator(int capacity,int indicatorSetScale) {
-		return new EMACalculator<>(capacity,indicatorSetScale);
+	public static <CARRIER extends IndicatorCalculateCarrier<?>>   IndicatorCalculator<CARRIER, Double> buildCalculator(int capacity,int indicatorSetScale,BiConsumer<CARRIER, Double> propertySetter,Function<CARRIER, Double> propertyGetter) {
+		return new EMACalculator<>(capacity,indicatorSetScale, propertySetter, propertyGetter);
 	}
 
 	
@@ -73,19 +74,23 @@ public class EMA extends Indicator {
 		/** 平滑系数的分子。 α为平滑系数，设定值为（2/n+1); */
 		private final Double α;
 		
+		private final Function<CARRIER, Double> propertyGetter;
+		
 		/** 指标精度 */
 		private final int indicatorSetScale;
+		
 		/**
 		 * @param period
 		 */
-		public EMACalculator(int period,int indicatorSetScale) {
-			super(period, false);
-			this.indicatorSetScale = indicatorSetScale;
+		public EMACalculator(int period,int indicatorSetScale,BiConsumer<CARRIER, Double> propertySetter,Function<CARRIER, Double> propertyGetter) {
+			super(period, false,propertySetter);
 			this.α = DoubleUtils.divide(2, period + 1, DoubleUtils.MAX_SCALE);
+			this.indicatorSetScale = indicatorSetScale;
+			this.propertyGetter = propertyGetter;
 		}
 
 		@Override
-		protected Double executeCalculate(Function<CARRIER, Double> propertyGetter) {
+		protected Double executeCalculate() {
 			CARRIER head = getHead();
 			// 前一个计算指数
 			CARRIER prev = getPrev();

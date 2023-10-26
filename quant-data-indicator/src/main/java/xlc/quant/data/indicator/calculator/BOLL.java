@@ -1,13 +1,14 @@
 package xlc.quant.data.indicator.calculator;
 
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import xlc.quant.data.indicator.Indicator;
-import xlc.quant.data.indicator.IndicatorCalculator;
 import xlc.quant.data.indicator.IndicatorCalculateCarrier;
+import xlc.quant.data.indicator.IndicatorCalculator;
 import xlc.quant.data.indicator.util.DoubleUtils;
 
 /**
@@ -63,8 +64,8 @@ public class BOLL extends Indicator {
 	 * @param indicatorSetScale        指标精度
 	 * @return
 	 */
-	public static <CARRIER extends IndicatorCalculateCarrier<?>> IndicatorCalculator<CARRIER,BOLL> buildCalculator(int capacity, double k,int indicatorSetScale) {
-		return new BOLLCalculator<>(capacity, k, indicatorSetScale);
+	public static <CARRIER extends IndicatorCalculateCarrier<?>> IndicatorCalculator<CARRIER,BOLL> buildCalculator(int capacity, double k,int indicatorSetScale,BiConsumer<CARRIER, BOLL> propertySetter,Function<CARRIER, BOLL> propertyGetter) {
+		return new BOLLCalculator<>(capacity, k, indicatorSetScale,propertySetter,propertyGetter);
 	}
 
 	/**
@@ -82,6 +83,9 @@ public class BOLL extends Indicator {
 		
 		/** 指标精度 */
 		private final int indicatorSetScale;
+		
+		/** 委托方法，从载体类获取计算结果的方法 */
+		private final Function<CARRIER, BOLL> propertyGetter;
 
 		/**
 		 * 各大股票交易软件默认N是20，所以MB等于当日20日均线值，（K为参数，可根据股票的特性来做相应的调整，一般默认为2）
@@ -90,14 +94,15 @@ public class BOLL extends Indicator {
 		 * @param k        K为参数，可根据股票的特性来做相应的调整，一般默认为2
 		 * @param indicatorSetScale        指标精度
 		 */
-		BOLLCalculator(int period, double k,int indicatorSetScale) {
-			super((period <= 0 ? DEFAULT_PERIOD : period), true);
+		BOLLCalculator(int period, double k,int indicatorSetScale,BiConsumer<CARRIER, BOLL> propertySetter,Function<CARRIER, BOLL> propertyGetter) {
+			super((period <= 0 ? DEFAULT_PERIOD : period), true,propertySetter);
 			this.k =  k <= 0 ? DEFAULT_K : k;
 			this.indicatorSetScale =  indicatorSetScale;
+			this.propertyGetter =  propertyGetter;
 		}
 
 		@Override
-		protected BOLL executeCalculate(Function<CARRIER, BOLL> propertyGetter) {
+		protected BOLL executeCalculate() {
 			CARRIER head = getHead();
 			// 1）计算MA: MA=N日内的收盘价之和÷N
 

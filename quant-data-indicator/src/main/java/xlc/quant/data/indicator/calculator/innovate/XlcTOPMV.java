@@ -3,14 +3,14 @@ package xlc.quant.data.indicator.calculator.innovate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.function.Function;
+import java.util.function.BiConsumer;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import xlc.quant.data.indicator.Indicator;
-import xlc.quant.data.indicator.IndicatorCalculator;
 import xlc.quant.data.indicator.IndicatorCalculateCarrier;
+import xlc.quant.data.indicator.IndicatorCalculator;
 import xlc.quant.data.indicator.util.DoubleUtils;
 
 /**
@@ -49,8 +49,10 @@ public class XlcTOPMV extends Indicator {
 	 * @param indicatorVolumeSetScale  指标Volume精度
 	 * @return
 	 */
-	public static <CARRIER extends IndicatorCalculateCarrier<?>> IndicatorCalculator<CARRIER, XlcTOPMV> buildCalculator(int capacity, int top,int indicatorAmountSetScale,int indicatorVolumeSetScale) {
-		return  new XlcTOPMVCalculator<>(capacity,  top, indicatorAmountSetScale, indicatorVolumeSetScale);
+	public static <CARRIER extends IndicatorCalculateCarrier<?>> IndicatorCalculator<CARRIER, XlcTOPMV> buildCalculator(
+			int capacity, int top,int indicatorAmountSetScale,int indicatorVolumeSetScale
+			,BiConsumer<CARRIER, XlcTOPMV> propertySetter) {
+		return  new XlcTOPMVCalculator<>(capacity,  top, indicatorAmountSetScale, indicatorVolumeSetScale,propertySetter);
     }
 
 	/**
@@ -71,8 +73,8 @@ public class XlcTOPMV extends Indicator {
 		 * @param indicatorAmountSetScale  指标Amount精度
 		 * @param indicatorVolumeSetScale  指标Volume精度
 		 */
-		XlcTOPMVCalculator(int capacity, int top,int indicatorAmountSetScale,int indicatorVolumeSetScale) {
-			super(capacity, true);
+		XlcTOPMVCalculator(int capacity, int top,int indicatorAmountSetScale,int indicatorVolumeSetScale,BiConsumer<CARRIER, XlcTOPMV> propertySetter) {
+			super(capacity, true, propertySetter);
 			this.top = top;
 			this.indicatorAmountSetScale = indicatorAmountSetScale;
 			this.indicatorVolumeSetScale = indicatorVolumeSetScale;
@@ -82,7 +84,7 @@ public class XlcTOPMV extends Indicator {
 		 *
 		 */
 		@Override
-		protected XlcTOPMV executeCalculate(Function<CARRIER, XlcTOPMV> propertyGetter) {
+		protected XlcTOPMV executeCalculate() {
 			// 成交额-所有
 			List<Double> listAmount = new ArrayList<>(capacity());
 			// 成交量-所有

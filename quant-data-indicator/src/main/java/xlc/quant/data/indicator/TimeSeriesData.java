@@ -12,7 +12,7 @@ package xlc.quant.data.indicator;
  *	LocalDateTime	包含日期和时间，比如：2020-05-20 13:14:00
  *	ZonedDateTime	带时区的时间
  *	Date 			日期时间
- * 
+ *
  * <p>
  * 这种嵌套泛型<TIME extends Comparable<? super TIME>>可以被描述为一个具有两层限制的泛型声明。
  *     1、首先，TIME是一个泛型类型参数，它被限制为实现了Comparable接口的类型。这意味着传入的类型必须具有比较能力，可以进行比较操作。

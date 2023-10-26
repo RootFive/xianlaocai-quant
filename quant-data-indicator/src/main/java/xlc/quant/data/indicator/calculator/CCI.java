@@ -1,13 +1,14 @@
 package xlc.quant.data.indicator.calculator;
 
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import xlc.quant.data.indicator.Indicator;
-import xlc.quant.data.indicator.IndicatorCalculator;
 import xlc.quant.data.indicator.IndicatorCalculateCarrier;
+import xlc.quant.data.indicator.IndicatorCalculator;
 import xlc.quant.data.indicator.util.DoubleUtils;
 
 /**
@@ -62,8 +63,8 @@ public class CCI extends Indicator {
 	 * @param assistIndicatorSetScale  辅助指标精度
 	 * @return
 	 */
-	public static <CARRIER extends IndicatorCalculateCarrier<?>> IndicatorCalculator<CARRIER, CCI> buildCalculator(int capacity,int indicatorSetScale) {
-		return new CCICalculator<>(capacity, indicatorSetScale);
+	public static <CARRIER extends IndicatorCalculateCarrier<?>> IndicatorCalculator<CARRIER, CCI> buildCalculator(int capacity,int indicatorSetScale,BiConsumer<CARRIER, CCI> propertySetter,Function<CARRIER, CCI> propertyGetter) {
+		return new CCICalculator<>(capacity, indicatorSetScale,propertySetter,propertyGetter);
 	}
 
 	/**
@@ -82,17 +83,20 @@ public class CCI extends Indicator {
 		
 		/** 指标精度 */
 		private final int indicatorSetScale;
+		
+		private final Function<CARRIER, CCI> propertyGetter;
 
 		/**
 		 * @param capacity
 		 */
-		CCICalculator(int capacity,int indicatorSetScale) {
-			super(capacity, false);
+		CCICalculator(int capacity,int indicatorSetScale,BiConsumer<CARRIER, CCI> propertySetter,Function<CARRIER, CCI> propertyGetter) {
+			super(capacity, false,propertySetter);
 			this.indicatorSetScale =  indicatorSetScale;
+			this.propertyGetter =  propertyGetter;
 		}
 
 		@Override
-		protected CCI executeCalculate(Function<CARRIER, CCI> propertyGetter) {
+		protected CCI executeCalculate() {
 			CARRIER head = getHead();
 			Double tp = DoubleUtils.average(DoubleUtils.MAX_SCALE,head.getHigh(),head.getLow(),head.getClose());
 			if (!isFull()) {

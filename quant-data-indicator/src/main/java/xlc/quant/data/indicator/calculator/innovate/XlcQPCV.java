@@ -1,14 +1,15 @@
 package xlc.quant.data.indicator.calculator.innovate;
 
 import java.util.Optional;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import xlc.quant.data.indicator.Indicator;
-import xlc.quant.data.indicator.IndicatorCalculator;
 import xlc.quant.data.indicator.IndicatorCalculateCarrier;
+import xlc.quant.data.indicator.IndicatorCalculator;
 
 /**
  * @author Rootfive XLC-量价形态
@@ -53,20 +54,25 @@ public class XlcQPCV extends Indicator {
 	 * @param indicatorSetScale        指标精度
 	 * @return
 	 */
-	public static <CARRIER extends IndicatorCalculateCarrier<?>> IndicatorCalculator<CARRIER,XlcQPCV> buildCalculator() {
-		return new XlcQPCVCalculator<>();
+	public static <CARRIER extends IndicatorCalculateCarrier<?>> IndicatorCalculator<CARRIER,XlcQPCV> buildCalculator(BiConsumer<CARRIER, XlcQPCV> propertySetter,Function<CARRIER, XlcQPCV> propertyGetter) {
+		return new XlcQPCVCalculator<>(propertySetter,propertyGetter);
 	}
 
 
 
 	private static class XlcQPCVCalculator<CARRIER extends IndicatorCalculateCarrier<?>> extends IndicatorCalculator<CARRIER,XlcQPCV> {
-
-		XlcQPCVCalculator() {
-			super(2, true);
+		
+		/** 委托方法，从载体类获取计算结果的方法 */
+		private final Function<CARRIER, XlcQPCV> propertyGetter;
+		
+		
+		XlcQPCVCalculator(BiConsumer<CARRIER, XlcQPCV> propertySetter,Function<CARRIER, XlcQPCV> propertyGetter) {
+			super(2, true,propertySetter);
+			this.propertyGetter = propertyGetter;
 		}
 
 		@Override
-		protected XlcQPCV executeCalculate(Function<CARRIER, XlcQPCV> propertyGetter) {
+		protected XlcQPCV executeCalculate() {
 			CARRIER head = getHead();
 			CARRIER prev = getPrev();
 			

@@ -1,13 +1,14 @@
 package xlc.quant.data.indicator.calculator;
 
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import xlc.quant.data.indicator.Indicator;
-import xlc.quant.data.indicator.IndicatorCalculator;
 import xlc.quant.data.indicator.IndicatorCalculateCarrier;
+import xlc.quant.data.indicator.IndicatorCalculator;
 import xlc.quant.data.indicator.util.DoubleUtils;
 
 /**
@@ -64,8 +65,8 @@ public class DMI extends Indicator {
 	 * @param adxPeriod
 	 * @return
 	 */
-	public static <CARRIER extends IndicatorCalculateCarrier<?>> IndicatorCalculator<CARRIER, DMI> buildCalculator(int diPeriod, int adxPeriod) {
-		return new DMICalculator<>(diPeriod, adxPeriod);
+	public static <CARRIER extends IndicatorCalculateCarrier<?>> IndicatorCalculator<CARRIER, DMI> buildCalculator(int diPeriod, int adxPeriod,BiConsumer<CARRIER, DMI> propertySetter,Function<CARRIER, DMI> propertyGetter) {
+		return new DMICalculator<>(diPeriod, adxPeriod,propertySetter,propertyGetter);
 	}
 	
 
@@ -77,14 +78,16 @@ public class DMI extends Indicator {
 		
 		/** 趋向周期 */
 		private final int adxPeriod;
+		private final Function<CARRIER, DMI> propertyGetter;
 
 		/**
 		 * @param diPeriod 动向周期
 		 * @param adxPeriod 趋向周期
 		 */
-		DMICalculator(int diPeriod, int adxPeriod) {
-			super(diPeriod, false);
+		DMICalculator(int diPeriod, int adxPeriod,BiConsumer<CARRIER, DMI> propertySetter,Function<CARRIER, DMI> propertyGetter) {
+			super(diPeriod, false, propertySetter);
 			this.adxPeriod = adxPeriod;
+			this.propertyGetter = propertyGetter;
 		}
 
 		
@@ -92,7 +95,7 @@ public class DMI extends Indicator {
 		 *  百度百科：https://baike.baidu.com/item/DMI%E6%8C%87%E6%A0%87/3423254#4
 		 */
 		@Override
-		protected DMI executeCalculate(Function<CARRIER, DMI> propertyGetter) {
+		protected DMI executeCalculate() {
 			CARRIER prev = getPrev();
 			CARRIER head = getHead();
 

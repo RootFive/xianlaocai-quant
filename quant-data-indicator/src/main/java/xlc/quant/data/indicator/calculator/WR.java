@@ -1,12 +1,12 @@
 package xlc.quant.data.indicator.calculator;
 
-import java.util.function.Function;
+import java.util.function.BiConsumer;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import xlc.quant.data.indicator.Indicator;
-import xlc.quant.data.indicator.IndicatorCalculator;
 import xlc.quant.data.indicator.IndicatorCalculateCarrier;
+import xlc.quant.data.indicator.IndicatorCalculator;
 import xlc.quant.data.indicator.util.DoubleUtils;
 
 /**
@@ -45,8 +45,8 @@ public class WR extends Indicator {
 	 * @param capacity
 	 * @return
 	 */
-	public static <CARRIER extends IndicatorCalculateCarrier<?>> IndicatorCalculator<CARRIER, Double> buildCalculator(int capacity) {
-		return new WRIndicatorCalculateExecutor<>(capacity);
+	public static <CARRIER extends IndicatorCalculateCarrier<?>> IndicatorCalculator<CARRIER, Double> buildCalculator(int capacity,BiConsumer<CARRIER, Double> propertySetter) {
+		return new WRIndicatorCalculateExecutor<>(capacity,propertySetter);
 	}
 
 	/**
@@ -58,12 +58,12 @@ public class WR extends Indicator {
 		/**
 		 * @param capacity
 		 */
-		public WRIndicatorCalculateExecutor(int capacity) {
-			super(capacity, true);
+		public WRIndicatorCalculateExecutor(int capacity,BiConsumer<CARRIER, Double> propertySetter) {
+			super(capacity, true, propertySetter);
 		}
 
 		@Override
-		protected Double executeCalculate(Function<CARRIER, Double> propertyGetter) {
+		protected Double executeCalculate() {
 			CARRIER head = getHead();
 
 			double headClose = head.getClose();

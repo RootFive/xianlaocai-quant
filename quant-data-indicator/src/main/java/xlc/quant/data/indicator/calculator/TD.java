@@ -1,12 +1,13 @@
 package xlc.quant.data.indicator.calculator;
 
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import xlc.quant.data.indicator.Indicator;
-import xlc.quant.data.indicator.IndicatorCalculator;
 import xlc.quant.data.indicator.IndicatorCalculateCarrier;
+import xlc.quant.data.indicator.IndicatorCalculator;
 
 
 /**
@@ -30,8 +31,10 @@ public class TD extends Indicator {
 	 * @param capacity
 	 * @return
 	 */
-	public static <CARRIER extends IndicatorCalculateCarrier<?>> IndicatorCalculator<CARRIER, Integer> buildCalculator(int capacity, int moveSize) {
-		return new TDCalculator<>(capacity, moveSize);
+	public static <CARRIER extends IndicatorCalculateCarrier<?>> IndicatorCalculator<CARRIER, Integer> buildCalculator(
+			int capacity, int moveSize,
+			BiConsumer<CARRIER, Integer> propertySetter,Function<CARRIER, Integer> propertyGetter) {
+		return new TDCalculator<>(capacity, moveSize, propertySetter,propertyGetter);
 	}
 
 
@@ -42,18 +45,21 @@ public class TD extends Indicator {
 	private static class TDCalculator<CARRIER extends IndicatorCalculateCarrier<?>> extends IndicatorCalculator<CARRIER, Integer> {
 
 		private final int moveSize;
+		
+		private final Function<CARRIER, Integer> propertyGetter;
 
 		/**
 		 * @param capacity
 		 * @param isFullCapacityCalculate
 		 */
-		public TDCalculator(int capacity, int moveSize) {
-			super(capacity, false);
+		public TDCalculator(int capacity, int moveSize,BiConsumer<CARRIER, Integer> propertySetter,Function<CARRIER, Integer> propertyGetter) {
+			super(capacity, false,propertySetter);
 			this.moveSize = moveSize;
+			this.propertyGetter = propertyGetter;
 		}
 
 		@Override
-		protected Integer executeCalculate(Function<CARRIER, Integer> propertyGetter) {
+		protected Integer executeCalculate() {
 			if (size() < (1 + moveSize)) {
 				return null;
 			}

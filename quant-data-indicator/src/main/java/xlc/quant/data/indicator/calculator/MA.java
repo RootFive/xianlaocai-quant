@@ -1,12 +1,12 @@
 package xlc.quant.data.indicator.calculator;
 
-import java.util.function.Function;
+import java.util.function.BiConsumer;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import xlc.quant.data.indicator.Indicator;
-import xlc.quant.data.indicator.IndicatorCalculator;
 import xlc.quant.data.indicator.IndicatorCalculateCarrier;
+import xlc.quant.data.indicator.IndicatorCalculator;
 import xlc.quant.data.indicator.util.DoubleUtils;
 
 /**
@@ -34,8 +34,8 @@ public class MA extends Indicator {
 	 * @param indicatorSetScale        指标精度
 	 * @return
 	 */
-	public static <CARRIER extends IndicatorCalculateCarrier<?>>  IndicatorCalculator<CARRIER, Double> buildCalculator(int capacity,int indicatorSetScale) {
-		return new MACalculator<>(capacity,indicatorSetScale);
+	public static <CARRIER extends IndicatorCalculateCarrier<?>>  IndicatorCalculator<CARRIER, Double> buildCalculator(int capacity,int indicatorSetScale,BiConsumer<CARRIER, Double> propertySetter) {
+		return new MACalculator<>(capacity,indicatorSetScale, propertySetter);
 	}
 
 	/**
@@ -49,13 +49,13 @@ public class MA extends Indicator {
 		/**
 		 * @param capacity
 		 */
-		MACalculator(int capacity,int indicatorSetScale) {
-			super(capacity, true);
+		MACalculator(int capacity,int indicatorSetScale,BiConsumer<CARRIER, Double> propertySetter) {
+			super(capacity, true, propertySetter);
 			this.indicatorSetScale =  indicatorSetScale;
 		}
 
 		@Override
-		protected Double executeCalculate(Function<CARRIER, Double> propertyGetter) {
+		protected Double executeCalculate() {
 			double closeSumValue = DoubleUtils.ZERO;
 			for (int i = 0; i < size(); i++) {
 				closeSumValue = closeSumValue+ get(i).getClose();

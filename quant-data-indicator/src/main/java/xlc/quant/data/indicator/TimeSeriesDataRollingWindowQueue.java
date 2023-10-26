@@ -1,5 +1,9 @@
 package xlc.quant.data.indicator;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 /**
  * 时序数据-滚动窗口队列
  * @author Rootfive
@@ -160,4 +164,26 @@ public abstract class TimeSeriesDataRollingWindowQueue<TSD extends TimeSeriesDat
 			return getRollingDataElement(0);
 		}
 	}
+	
+	
+
+	/**
+	 * 获取队列中的所有元素,按照时间倒叙
+	 * @return
+	 */
+	public List<TSD> getDataList() {
+		if (isEmpty()) {
+			return Collections.emptyList();
+		}else {
+			
+			List<TSD> dataList = new ArrayList<>(size);
+			for (int i = 0; i < size; i++) {
+				dataList.add(get(i));
+			}
+			return dataList;
+		}
+
+	
+	}
+	
 }

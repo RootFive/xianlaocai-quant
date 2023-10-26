@@ -1,13 +1,14 @@
 package xlc.quant.data.indicator.calculator;
 
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import xlc.quant.data.indicator.Indicator;
-import xlc.quant.data.indicator.IndicatorCalculator;
 import xlc.quant.data.indicator.IndicatorCalculateCarrier;
+import xlc.quant.data.indicator.IndicatorCalculator;
 import xlc.quant.data.indicator.util.DoubleUtils;
 
 /**
@@ -57,8 +58,10 @@ public class MACD extends Indicator {
 	 * @param difCycle
 	 * @return
 	 */
-	public static <CARRIER extends IndicatorCalculateCarrier<?>> IndicatorCalculator<CARRIER, MACD> buildCalculator(int fastCycle, int slowCycle, int difCycle,int indicatorSetScale) {
-		return new MACDCalculator<>(fastCycle, slowCycle, difCycle,indicatorSetScale);
+	public static <CARRIER extends IndicatorCalculateCarrier<?>> IndicatorCalculator<CARRIER, MACD> buildCalculator(
+			int fastCycle, int slowCycle, int difCycle,int indicatorSetScale,
+			BiConsumer<CARRIER, MACD> propertySetter,Function<CARRIER, MACD> propertyGetter) {
+		return new MACDCalculator<>(fastCycle, slowCycle, difCycle,indicatorSetScale,propertySetter, propertyGetter);
 	}
 
 	/**
@@ -77,18 +80,20 @@ public class MACD extends Indicator {
 		
 		/** 指标精度 */
 		private final int indicatorSetScale;
+		private final Function<CARRIER, MACD> propertyGetter;
 		
 		
-		MACDCalculator(int fastCycle, int slowCycle, int difCycle,int indicatorSetScale) {
-			super(slowCycle, false);
+		MACDCalculator(int fastCycle, int slowCycle, int difCycle,int indicatorSetScale,BiConsumer<CARRIER, MACD> propertySetter,Function<CARRIER, MACD> propertyGetter) {
+			super(slowCycle, false,propertySetter);
 			this.fastEMA_α = DoubleUtils.divide(2, fastCycle + 1, DoubleUtils.MAX_SCALE);
 			this.slowEMA_α = DoubleUtils.divide(2, slowCycle + 1, DoubleUtils.MAX_SCALE);
 			this.difEMA_α =  DoubleUtils.divide(2, difCycle + 1, DoubleUtils.MAX_SCALE);
 			this.indicatorSetScale =  indicatorSetScale;
+			this.propertyGetter = propertyGetter;
 		}
 
 		@Override
-		protected MACD executeCalculate(Function<CARRIER, MACD> propertyGetter) {
+		protected MACD executeCalculate() {
 			CARRIER head = getHead();
 			CARRIER prev = getPrev();
 			
