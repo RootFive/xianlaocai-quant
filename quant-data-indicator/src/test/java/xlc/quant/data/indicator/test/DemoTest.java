@@ -19,8 +19,6 @@ import xlc.quant.data.indicator.calculator.MACD;
 import xlc.quant.data.indicator.calculator.RSI;
 import xlc.quant.data.indicator.calculator.TD;
 import xlc.quant.data.indicator.calculator.WR;
-import xlc.quant.data.indicator.calculator.innovate.XlcQPCV;
-import xlc.quant.data.indicator.calculator.innovate.XlcTOPMV;
 
 public class DemoTest {
     public static void main(String[] args) {
@@ -77,13 +75,6 @@ public class DemoTest {
 	protected static List<IndicatorCalculator<MarketQuotation, ?>> buildIndicatorCalculatorList(int indicatorSetScale) {
 		List<IndicatorCalculator<MarketQuotation, ?>> indicatorCalculatorList =  new ArrayList<>(); 
 		//技术指标===多值指标 XXX
-		//XLC-量价形态-计算器-配置
-		indicatorCalculatorList.add( XlcQPCV.buildCalculator(MarketQuotation::setQpcv,MarketQuotation::getQpcv));
-		//TOPMV-计算器-配置
-		indicatorCalculatorList.add(XlcTOPMV.buildCalculator(20, 3,indicatorSetScale,indicatorSetScale,MarketQuotation::setTop3In20));
-		indicatorCalculatorList.add(XlcTOPMV.buildCalculator(30, 4,indicatorSetScale,indicatorSetScale,MarketQuotation::setTop4In30));
-		indicatorCalculatorList.add(XlcTOPMV.buildCalculator(60, 5,indicatorSetScale,indicatorSetScale,MarketQuotation::setTop5In60));
-
 		// KDJ-计算器
 		indicatorCalculatorList.add(KDJ.buildCalculator(9,3,3,MarketQuotation::setKdj,MarketQuotation::getKdj));
 		// MACD-计算器

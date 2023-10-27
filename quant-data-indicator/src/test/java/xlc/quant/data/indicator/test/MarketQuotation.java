@@ -10,8 +10,6 @@ import xlc.quant.data.indicator.calculator.DMI;
 import xlc.quant.data.indicator.calculator.KDJ;
 import xlc.quant.data.indicator.calculator.MACD;
 import xlc.quant.data.indicator.calculator.RSI;
-import xlc.quant.data.indicator.calculator.innovate.XlcQPCV;
-import xlc.quant.data.indicator.calculator.innovate.XlcTOPMV;
 
 /**
  * 行情数据，股市请使用复权数据
@@ -67,18 +65,6 @@ public class MarketQuotation implements IndicatorCalculateCarrier<LocalDateTime>
 	// =======================XXX 以上是指标计算依赖属性字段
 
 	// 技术指标-多属性值指标 XXX
-	/** 量价形态 */
-	private XlcQPCV qpcv;
-	
-	/** TOPMV-20取3 */
-	private XlcTOPMV top3In20;
-
-	/** TOPMV-30取4 */
-	private XlcTOPMV top4In30;
-
-	/** TOPMV-60取5 */
-	private XlcTOPMV top5In60;
-	//============================================以上是XLC属性
 	
 	/** KDJ随机指标 */
 	private KDJ kdj;
