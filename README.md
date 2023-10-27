@@ -34,7 +34,7 @@ mvnrepository地址（更新较慢）：https://mvnrepository.com/artifact/com.x
 	<dependency>
 		<groupId>com.xianlaocai.quant</groupId>
 		<artifactId>quant-data-indicator</artifactId>
-		<version>XLCQ20231024</version>
+		<version>XLCQ20231027</version>
 	</dependency>
 ```
 
@@ -43,7 +43,7 @@ Gradle
 
 ```xml
 // https://mvnrepository.com/artifact/com.xianlaocai.quant/quant-data-indicator
-implementation group: 'com.xianlaocai.quant', name: 'quant-data-indicator', version: 'XLCQ20231024'
+implementation group: 'com.xianlaocai.quant', name: 'quant-data-indicator', version: 'XLCQ20231027'
 
 ```
 ### 基表计算示例 
@@ -142,6 +142,17 @@ public class MA extends Indicator {
 
 ## 升级日志 倒叙
 
+
+### XLCQ20231027
+增加指标数仓和数仓管理员概念
+1、 数仓：IndicatorDataWarehouse 基于内存存储指标
+```java
+	xlc.quant.data.indicator.IndicatorDataWarehouse<CARRIER, MANAGER>
+```
+2、 数仓管理员：IndicatorWarehouseManager 管理指标(自定义个数)计算
+```java
+	xlc.quant.data.indicator.IndicatorWarehouseManager<TIME, CARRIER>
+```
 
 ### XLCQ20231024
 1、修复xlc.quant.data.indicator.TimeSeriesDataRollingWindowQueue.getTail()在队列未满时，获取尾元素异常
