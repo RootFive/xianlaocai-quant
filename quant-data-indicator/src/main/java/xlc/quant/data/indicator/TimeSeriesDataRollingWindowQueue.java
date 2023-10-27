@@ -80,6 +80,14 @@ public abstract class TimeSeriesDataRollingWindowQueue<TSD extends TimeSeriesDat
 	public boolean isEmpty() {
 		return size == 0;
 	}
+	
+	/**
+	 * 队列是否有值
+	 * @return
+	 */
+	public boolean isNotEmpty() {
+		return !isEmpty();
+	}
 
 	/**
 	 * 队列是否满

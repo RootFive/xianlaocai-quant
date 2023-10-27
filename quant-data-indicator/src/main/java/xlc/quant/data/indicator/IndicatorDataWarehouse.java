@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @param <CARRIER> 指标计算载体
  * @param <MANAGER> 指标仓管
  */
-public abstract class IndicatorDataWarehouse<CARRIER extends IndicatorCalculateCarrier<?>, MANAGER extends IndicatorWarehouseManager<CARRIER>> {
+public abstract class IndicatorDataWarehouse<CARRIER extends IndicatorCalculateCarrier<?>, MANAGER extends IndicatorWarehouseManager<?,CARRIER>> {
 
 	/**
 	 * 指标数仓
@@ -24,11 +24,11 @@ public abstract class IndicatorDataWarehouse<CARRIER extends IndicatorCalculateC
 	protected final ConcurrentHashMap<String, MANAGER> dataWarehouse = new ConcurrentHashMap<>();
 
 	/**
-	 * 接收载体数据，适用于T+0模式
+	 * 入仓-接收载体数据，适用于T+0模式
 	 * @param carrierData
 	 * @return
 	 */
-	public boolean receive(CARRIER carrierData) {
+	public boolean receiving(CARRIER carrierData) {
 		//交易代码->
 		String symbol = carrierData.getSymbol();
 		
@@ -45,14 +45,14 @@ public abstract class IndicatorDataWarehouse<CARRIER extends IndicatorCalculateC
 	
 	
 	/**
-	 * 批量接收载体数据，适用于T+N模式
+	 * 入仓-批量接收载体数据，适用于T+N模式
 	 * @param carrierDataList
 	 * @return
 	 */
-	public synchronized boolean receive(List<CARRIER> carrierDataList) {
+	public  boolean receiving(List<CARRIER> carrierDataList) {
 		//循环批量接收指标
 		for (CARRIER carrierData : carrierDataList) {
-			this.receive(carrierData);
+			this.receiving(carrierData);
 		}
 		return true;
 	}
@@ -116,6 +116,10 @@ public abstract class IndicatorDataWarehouse<CARRIER extends IndicatorCalculateC
 		return true;
 	}
 	
-	
-
+	/**
+	 * @return 获取当前-数仓
+	 */
+	public ConcurrentHashMap<String, MANAGER> getDataWarehouse() {
+		return dataWarehouse;
+	}
 }

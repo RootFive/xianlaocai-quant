@@ -1,5 +1,6 @@
 package xlc.quant.data.indicator.test;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -57,7 +58,7 @@ public class DemoTest {
     public static void multipleIndicatorCalculate(List<MarketQuotation> listMarketQuotationOrderByCloseTimeAsc,int indicatorSetScale) {
     	List<IndicatorCalculator<MarketQuotation, ?>> calculatorConfig = buildIndicatorCalculatorList(2);
     	int maximum =200;//管理指标载体的最大数量
-    	IndicatorWarehouseManager<MarketQuotation> calculateManager = new IndicatorWarehouseManager<>(maximum, calculatorConfig);
+    	IndicatorWarehouseManager<LocalDateTime,MarketQuotation> calculateManager = new IndicatorWarehouseManager<>(maximum, calculatorConfig);
     	
     	//循环-管理员接收 新行情数据-进行批量计算所有指标
     	for (MarketQuotation mq : listMarketQuotationOrderByCloseTimeAsc) {
