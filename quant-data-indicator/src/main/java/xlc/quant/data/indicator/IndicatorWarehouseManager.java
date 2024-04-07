@@ -11,6 +11,7 @@ import java.util.Optional;
  */
 public class IndicatorWarehouseManager<TIME extends Comparable<? super TIME>, CARRIER extends IndicatorCalculateCarrier<TIME>> extends TimeSeriesDataRollingWindowQueue<CARRIER> {
 
+	
 	/**
 	 * 指标计算器列表
 	 * 
@@ -18,7 +19,7 @@ public class IndicatorWarehouseManager<TIME extends Comparable<? super TIME>, CA
 	 * 存储基于当前载体的计算器配置，该配置总计三个属性，具体包含：1个指标计算器、1个获取载体中指标委托方法、1个设置载体中指标值的委托方法
 	 * </pre>
 	 */
-	private final List<IndicatorCalculator<CARRIER, ?>> indicatorCalculatorList;
+	protected final List<IndicatorCalculator<CARRIER, ?>> indicatorCalculatorList;
 
 	/**
 	 * 构造
@@ -34,15 +35,18 @@ public class IndicatorWarehouseManager<TIME extends Comparable<? super TIME>, CA
 	/**
 	 * 接受数据，并进行指标的批量刷新
 	 */
+	@Override
 	public boolean accept(CARRIER enter) {
-		boolean enqueue = super.enqueue(enter);
+		boolean enqueue = super.accept(enter);
 		if (!enqueue) {
 			return false;
 		}
 
 		// 循环指标计算器配置列表 每个计算器进行一次指标计算
-		for (IndicatorCalculator<CARRIER, ?> indicatorCalculator : indicatorCalculatorList) {
-			indicatorCalculator.input(enter);
+		if (indicatorCalculatorList != null) {
+			for (IndicatorCalculator<CARRIER, ?> indicatorCalculator : indicatorCalculatorList) {
+				indicatorCalculator.input(enter);
+			}
 		}
 		return true;
 	}
@@ -58,6 +62,15 @@ public class IndicatorWarehouseManager<TIME extends Comparable<? super TIME>, CA
 			return closeTimeOptional.get().compareTo(closeTime) == 0;
 		}
 		return false;
+	}
+	
+	
+	/**
+	 * 获取管理员的交易对
+	 * @return
+	 */
+	public String symbol() {
+		return Optional.ofNullable(getHead()).map(CARRIER::getSymbol).orElse(null);
 	}
 
 }

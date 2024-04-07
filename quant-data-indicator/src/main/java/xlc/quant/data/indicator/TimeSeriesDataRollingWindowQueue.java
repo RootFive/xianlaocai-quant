@@ -34,7 +34,7 @@ public abstract class TimeSeriesDataRollingWindowQueue<TSD extends TimeSeriesDat
 	 * @param enter
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	synchronized boolean enqueue(TSD enter) {
+	synchronized boolean accept(TSD enter) {
 		if (enter == null) {
 			throw new NullPointerException("禁止空（null）数据入队");
 		}

@@ -3,6 +3,9 @@
  */
 package xlc.quant.data.indicator.util;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
 import org.apache.commons.lang3.ArrayUtils;
 
 import com.google.common.primitives.Doubles;
@@ -46,32 +49,22 @@ public class DoubleUtils {
 	 * 设置精度
 	 * @param value
 	 * @param newScale
-	 * @return
-	 * 将给定的 double 值乘以一个放大因子，然后使用 Math.round() 方法四舍五入，最后再除以放大因子，以达到截断小数点位数的效果。
-	 * 这种方法的性能相对较高，因为它只使用了简单的数学运算，没有涉及字符串操作或格式化。
-	 * 它直接对 double 值进行数学计算，因此在处理大量数据时能够更高效地执行。
 	 */
 	public static double setScale(double value, int newScale) {
 		if (newScale > 15|| newScale < 0 ) {
-            throw new IllegalArgumentException("小数位必须在（1-15）位");
-        }
-		
-		double factor = Math.pow(10, newScale);
-		return Math.round(value * factor) / factor;
+			throw new IllegalArgumentException("小数位必须在（1-15）位");
+		}
+		return new BigDecimal(String.valueOf(value)).setScale(newScale,RoundingMode.HALF_UP).doubleValue();
 	}
 
 	/**
 	 * @param value
-	 * @return 使用了循环和数学运算来获取 double 值的小数点位数。
+	 * @return 获取 double 值的小数点位数。
 	 */
 	public static int getScale(double value) {
-		int decimalPlaces = 0;
-		while (value != Math.floor(value)) {
-			value *= 10;
-			decimalPlaces++;
-		}
-		return decimalPlaces;
+		return new BigDecimal(String.valueOf(value)).scale();
 	}
+	
 	
 	
 	

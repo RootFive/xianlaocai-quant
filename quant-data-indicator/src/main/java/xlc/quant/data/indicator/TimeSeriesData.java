@@ -28,6 +28,11 @@ public interface TimeSeriesData<TIME extends Comparable<? super TIME>> {
 
 	/**
 	 * @return 时序数据-时间戳
+	 * <pre>
+	 * 时间戳存在的意义在于刷新 当前时序数据（一半都是指当前K线）
+	 * 如果是历史数据，这个时间戳是等于closeTime;
+	 * 如果是实时数据，这个时间就是实时时间。
+	 * </pre>
 	 */
 	TIME getTimestamp();
 

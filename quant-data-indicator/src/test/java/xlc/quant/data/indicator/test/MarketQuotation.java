@@ -28,22 +28,22 @@ public class MarketQuotation implements IndicatorCalculateCarrier<LocalDateTime>
 	private String symbol;
 	
 	/** 开盘价 */
-	private double open;
+	private Double open;
 
 	/** 最低价 */
-	private double low;
+	private Double low;
 
 	/** 最高价 */
-	private double high;
+	private Double high;
 
 	/** 收盘价(当前K线未结束的即为最新交易价) */
-	private double close;
+	private Double close;
 
 	/** 成交量 */
-	private double volume;
+	private Double volume;
 
 	/** 成交额 */
-	private double amount;
+	private Double amount;
 
 	// =======================
 	// 上面的属性值，一般情况下，分时和日行情都有

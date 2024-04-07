@@ -1,6 +1,7 @@
 package xlc.quant.data.indicator;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -33,7 +34,7 @@ public abstract class IndicatorDataWarehouse<CARRIER extends IndicatorCalculateC
 		String symbol = carrierData.getSymbol();
 		
 		//交易代码->仓管
-		MANAGER warehouseManager = dataWarehouse.get(symbol);
+		MANAGER warehouseManager = getManager(symbol);
 
 		if (warehouseManager == null) {
 			warehouseManager = assignManager(carrierData);
@@ -63,7 +64,7 @@ public abstract class IndicatorDataWarehouse<CARRIER extends IndicatorCalculateC
 	 * @return
 	 */
 	public List<CARRIER> getDataList(String symbol) {
-		MANAGER manager = dataWarehouse.get(symbol);
+		MANAGER manager = getManager(symbol);
 		if (manager == null || manager.isEmpty()) {
 			return Collections.emptyList();
 		}else {
@@ -122,4 +123,21 @@ public abstract class IndicatorDataWarehouse<CARRIER extends IndicatorCalculateC
 	public ConcurrentHashMap<String, MANAGER> getDataWarehouse() {
 		return dataWarehouse;
 	}
+	
+	/**
+	 * 数仓管理员
+	 * @return
+	 */
+	public Collection<MANAGER> getDataWarehouseManager() {
+		return dataWarehouse.values();
+	}
+	
+	/**
+	 * @return 获取当前-数仓
+	 */
+	public MANAGER getManager(String symbol) {
+		return dataWarehouse.get(symbol);
+	}
+	
+	
 }

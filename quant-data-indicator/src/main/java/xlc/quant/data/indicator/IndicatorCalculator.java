@@ -38,7 +38,7 @@ public abstract class IndicatorCalculator<CARRIER extends IndicatorCalculateCarr
 	 * @return
 	 */
 	public synchronized INDI input(CARRIER enterCarrier) {
-		boolean addResult = super.enqueue(enterCarrier);
+		boolean addResult = super.accept(enterCarrier);
 		if (addResult) {
 			// 新增成功
 			if (!isFullCapacityCalculate || (isFullCapacityCalculate && this.isFull())) {

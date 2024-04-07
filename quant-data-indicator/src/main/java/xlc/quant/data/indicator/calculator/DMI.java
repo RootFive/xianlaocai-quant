@@ -108,8 +108,8 @@ public class DMI extends Indicator {
 				dmm = DoubleUtils.ZERO;
 			} else {
 				Double highLowDiff = head.getHigh()- head.getLow();
-				Double highPrevCloseDiff = head.getHigh()- head.getPreClose();
-				Double lowPrevCloseDiff = head.getLow()-head.getPreClose();
+				Double highPrevCloseDiff = head.getHigh()- prev.getClose();
+				Double lowPrevCloseDiff = head.getLow()-prev.getClose();
 				tr = DoubleUtils.max(highLowDiff,Math.abs(highPrevCloseDiff),Math.abs(lowPrevCloseDiff));
 
 				Double highMinusHighPrev = head.getHigh()-prev.getHigh();

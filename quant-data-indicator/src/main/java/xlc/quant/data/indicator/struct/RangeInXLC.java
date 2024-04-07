@@ -30,7 +30,6 @@ public class RangeInXLC<C extends Comparable<?>> {
 		}
 	}
 	
-	
 
 	/** 范围对象 */
 	private final Range<C> range;
@@ -46,8 +45,8 @@ public class RangeInXLC<C extends Comparable<?>> {
 	 */
 	private final Comparator<C> comparator;
 
-
-
+	
+	
 	@SuppressWarnings("unchecked")
 	private RangeInXLC(final Range<C> range, final boolean isLeftOpen, final boolean isRightOpen,final Comparator<C> comp) {
 			
@@ -60,6 +59,19 @@ public class RangeInXLC<C extends Comparable<?>> {
 			this.comparator = comp;
 		}
 	}
+	
+	
+	public boolean isLeftOpen() {
+		return isLeftOpen;
+	}
+
+	public boolean isRightOpen() {
+		return isRightOpen;
+	}
+	
+	//================分隔符====================== XXX  
+	
+	
 
 	/**
 	 * 全开-区间： ( lower..upper )
@@ -262,4 +274,7 @@ public class RangeInXLC<C extends Comparable<?>> {
 	}
 
 	// 其他方法...
+	
+
+
 }

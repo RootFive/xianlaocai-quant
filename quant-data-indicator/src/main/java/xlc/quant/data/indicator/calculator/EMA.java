@@ -61,7 +61,8 @@ public class EMA extends Indicator {
 	 * </pre>
 	 */
 	public static Double calculateEma(Double currentUse, Double prevEma, double α,int indicatorSetScale) {
-		return DoubleUtils.setScale((currentUse-prevEma) * α + prevEma, indicatorSetScale);
+		final double value = (currentUse-prevEma) * α + prevEma;
+		return DoubleUtils.setScale(value, indicatorSetScale);
 	}
 	
 	

@@ -100,7 +100,12 @@ public class RSI extends Indicator {
 				
 				for (int i = 0; i < capacity(); i++) {
 					CARRIER carrier_i = get(i);
-					Double changePrice = carrier_i.getPriceChange();
+					
+					Double preClose = carrier_i.getOpen();
+					if (i > 0) {
+						preClose = get(i-1).getClose();
+					}
+					Double changePrice = carrier_i.getClose()-preClose;
 					// 涨幅之和累加
 					if (changePrice > DoubleUtils.ZERO) {
 						sumUp = sumUp + Math.abs(changePrice);
@@ -116,7 +121,8 @@ public class RSI extends Indicator {
 				Double prevEmaDown = prevRSI.getEmaDown();
 
 				CARRIER head = getHead();
-				Double changePrice = head.getPriceChange();
+				CARRIER prev = getPrev();
+				Double changePrice = head.getClose()-prev.getClose();
 
 				// 涨幅之和累加
 				int compareTo = changePrice.compareTo(DoubleUtils.ZERO);
