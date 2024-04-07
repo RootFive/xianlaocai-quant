@@ -34,7 +34,7 @@ mvnrepository地址（更新较慢）：https://mvnrepository.com/artifact/com.x
 	<dependency>
 		<groupId>com.xianlaocai.quant</groupId>
 		<artifactId>quant-data-indicator</artifactId>
-		<version>XLCQ20231027</version>
+		<version>XLCQ20240406</version>
 	</dependency>
 ```
 
@@ -43,7 +43,7 @@ Gradle
 
 ```xml
 // https://mvnrepository.com/artifact/com.xianlaocai.quant/quant-data-indicator
-implementation group: 'com.xianlaocai.quant', name: 'quant-data-indicator', version: 'XLCQ20231027'
+implementation group: 'com.xianlaocai.quant', name: 'quant-data-indicator', version: 'XLCQ20240406'
 
 ```
 ### 基表计算示例 
@@ -143,13 +143,54 @@ public class MA extends Indicator {
 ## 升级日志 倒叙
 
 
+### XLCQ20240406
+修复工具类方法。设置double值设置精度。借助BigDecimal设置精度
+
+```java
+	/**
+	 * 设置精度
+	 * @param value
+	 * @param newScale
+	 */
+	public static double setScale(double value, int newScale) {
+		if (newScale > 15|| newScale < 0 ) {
+			throw new IllegalArgumentException("小数位必须在（1-15）位");
+		}
+		return new BigDecimal(String.valueOf(value)).setScale(newScale,RoundingMode.HALF_UP).doubleValue();
+	}
+	
+```
+原因是原方法中：value * factor 的结果 大于 long的最大值Long.MAX_VALUE时，返回的结果可能会出现一个固定值。
+
+```java
+	/**
+	 * 设置精度
+	 * @param value
+	 * @param newScale
+	 * @return
+	 * 将给定的 double 值乘以一个放大因子，然后使用 Math.round() 方法四舍五入，最后再除以放大因子，以达到截断小数点位数的效果。
+	 * 这种方法的性能相对较高，因为它只使用了简单的数学运算，没有涉及字符串操作或格式化。
+	 * 它直接对 double 值进行数学计算，因此在处理大量数据时能够更高效地执行。
+	 */
+	public static double setScale(double value, int newScale) {
+		if (newScale > 15|| newScale < 0 ) {
+            throw new IllegalArgumentException("小数位必须在（1-15）位");
+        }
+		
+		double factor = Math.pow(10, newScale);
+		return Math.round(value * factor) / factor; // 问题出现在这里 value * factor 可能恒等于 Long.MAX_VALUE
+	}
+```
+
 ### XLCQ20231027
 增加指标数仓和数仓管理员概念
 1、 数仓：IndicatorDataWarehouse 基于内存存储指标
+
 ```java
 	xlc.quant.data.indicator.IndicatorDataWarehouse<CARRIER, MANAGER>
 ```
 2、 数仓管理员：IndicatorWarehouseManager 管理指标(自定义个数)计算
+
 ```java
 	xlc.quant.data.indicator.IndicatorWarehouseManager<TIME, CARRIER>
 ```
