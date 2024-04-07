@@ -42,7 +42,7 @@
 		<maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
 		<maven-source-plugin.version>3.3.0</maven-source-plugin.version>-->
 
-		<lombok.version>1.18.24</lombok.version>
+		<lombok.version>1.18.30</lombok.version>
 
 		<!-- 打包跳过单元测试1 -->
 		<skipTests>true</skipTests>
@@ -97,14 +97,14 @@
 			<dependency>
 				<groupId>org.projectlombok</groupId>
 				<artifactId>lombok</artifactId>
-				<version>1.18.24</version>
+				<version>1.18.30</version>
 			</dependency>
 
 			<!-- Google Guava -->
 			<dependency>
 				<groupId>com.google.guava</groupId>
 				<artifactId>guava</artifactId>
-				<version>32.1.2-jre</version>
+				<version>33.1.0-jre</version>
 			</dependency>
 
 			<!-- Apache math3 -->
