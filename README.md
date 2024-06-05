@@ -34,7 +34,7 @@ mvnrepository地址（更新较慢）：https://mvnrepository.com/artifact/com.x
 	<dependency>
 		<groupId>com.xianlaocai.quant</groupId>
 		<artifactId>quant-data-indicator</artifactId>
-		<version>XLCQ20240406</version>
+		<version>XLCQ20240604</version>
 	</dependency>
 ```
 
@@ -43,7 +43,7 @@ Gradle
 
 ```xml
 // https://mvnrepository.com/artifact/com.xianlaocai.quant/quant-data-indicator
-implementation group: 'com.xianlaocai.quant', name: 'quant-data-indicator', version: 'XLCQ20240406'
+implementation group: 'com.xianlaocai.quant', name: 'quant-data-indicator', version: 'XLCQ20240604'
 
 ```
 ### 基表计算示例 
@@ -141,6 +141,13 @@ public class MA extends Indicator {
 
 
 ## 升级日志 倒叙
+
+### XLCQ20240604
+升级RangeInXLC范围工具类
+
+```java
+xlc.quant.data.indicator.struct.RangeInXLC.all()	
+```
 
 
 ### XLCQ20240406
