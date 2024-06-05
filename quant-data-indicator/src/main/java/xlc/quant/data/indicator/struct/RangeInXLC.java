@@ -70,7 +70,14 @@ public class RangeInXLC<C extends Comparable<?>> {
 	}
 	
 	//================分隔符====================== XXX  
-	
+
+	/**
+	 * 全区间： ( lower..upper )
+	 * @param <C>
+	 */
+	public static <C extends Comparable<?>> RangeInXLC<C> all() {
+		return new RangeInXLC<>(Range.all(), true, true,null);
+	}
 	
 
 	/**
